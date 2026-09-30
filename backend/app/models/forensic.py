@@ -32,17 +32,17 @@ class RecommendedULBAction(BaseModel):
     intervention_type: str = Field(
         ...,
         description="Recommended action, e.g. 'Deploy Water Sprinkler Tanker and Issue Bylaw Fine'",
-        example="Deploy Water Sprinkler Tanker and Issue Bylaw Fine"
+        examples=["Deploy Water Sprinkler Tanker and Issue Bylaw Fine"]
     )
     target_department: str = Field(
         ...,
         description="Responsible ULB municipal department or statutory body",
-        example="Municipal Solid Waste Enforcement / East Delhi Municipal Corp"
+        examples=["Municipal Solid Waste Enforcement / East Delhi Municipal Corp"]
     )
     priority_level: PriorityLevelEnum = Field(
         ...,
         description="Urgency of intervention",
-        example=PriorityLevelEnum.CRITICAL
+        examples=[PriorityLevelEnum.CRITICAL]
     )
 
 
@@ -51,53 +51,52 @@ class ForensicAuditResult(BaseModel):
     is_valid_environmental_hazard: bool = Field(
         ...,
         description="False if image fails anti-spoofing (indoor, computer screen, selfie, meme, clear sky)",
-        example=True
+        examples=[True]
     )
     rejection_reason: Optional[str] = Field(
         None,
-        description="Explanation if the image was rejected due to anti-spoofing or lack of hazard",
-        example=None
+        description="Explanation if the image was rejected due to anti-spoofing or lack of hazard"
     )
     source_classification: Optional[PollutionSourceEnum] = Field(
         None,
         description="One of the 6 canonical pollution classifications",
-        example=PollutionSourceEnum.OPEN_MUNICIPAL_WASTE_BURNING
+        examples=[PollutionSourceEnum.OPEN_MUNICIPAL_WASTE_BURNING]
     )
     severity_score: float = Field(
         ...,
         ge=0.0,
         le=1.0,
         description="Hazard severity score from 0.0 (negligible) to 1.0 (extreme)",
-        example=0.88
+        examples=[0.88]
     )
     confidence_score: float = Field(
         ...,
         ge=0.0,
         le=1.0,
         description="Model confidence in visual forensic classification",
-        example=0.94
+        examples=[0.94]
     )
     optical_smoke_opacity: float = Field(
         0.0,
         ge=0.0,
         le=1.0,
         description="Estimated optical plume opacity (0.0=transparent haze to 1.0=pitch black / dense dust)",
-        example=0.85
+        examples=[0.85]
     )
     estimated_plume_spread_radius_meters: int = Field(
         ...,
         ge=0,
         description="Estimated source footprint and initial plume radius in meters",
-        example=450
+        examples=[450]
     )
     detected_visual_markers: List[str] = Field(
         default_factory=list,
         description="Forensic visual cues identified in the imagery",
-        example=[
+        examples=[[
             "Dense black toxic smoke",
             "Combustion of mixed plastics and municipal refuse",
             "Uncontrolled open flame adjacent to transit corridor"
-        ]
+        ]]
     )
     recommended_ulb_action: Optional[RecommendedULBAction] = Field(
         None,
