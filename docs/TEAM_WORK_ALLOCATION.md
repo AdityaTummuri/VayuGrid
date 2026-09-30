@@ -105,26 +105,37 @@
 ---
 
 ### Member 4: Geospatial, Physics & Cloud Lead (Gaussian Dispersion, Weather & Deployment)
+* **Status:** ✅ **100% Engineering Complete & Verified** ([Detailed Handover Guide](ROLE_4_HANDOVER.md))
 * **Goal:** Model the physics of downwind air dispersion, calculate real-time vulnerable infrastructure intersections, and manage cloud infrastructure.
-* **Core Responsibilities:**
+* **Core Responsibilities & Deliverables Completed:**
   1. **Meteorological Vector Ingestion:**
      * Real-time telemetry ingestion from Open-Meteo API (wind speed at 10m, wind direction bearing, boundary layer height, ambient temperature, relative humidity).
      * Downwind trajectory bearing calculation: $\theta_{downwind} = (\theta_{wind} + 180^\circ) \pmod{360^\circ}$.
-  2. **Gaussian Plume Dispersion Model:**
-     * Adapted steady-state Gaussian plume equation:
-       $$C(x, y, z) = \frac{Q}{2 \pi u \sigma_y \sigma_z} \exp\left( -\frac{y^2}{2 \sigma_y^2} \right) \left[ \exp\left( -\frac{(z - H)^2}{2 \sigma_z^2} \right) + \exp\left( -\frac{(z + H)^2}{2 \sigma_z^2} \right) \right]$$
-     * Dynamic downwind polygon cone generator ($\pm 22.5^\circ$ lateral expansion, reach $D = f(u, \text{Severity})$).
+     * Pasquill-Gifford stability determination (A-F) & friction velocity ($u_*$).
+     * Pre-computed microclimate fallbacks for Delhi-NCR, Bengaluru, Kanpur, Mumbai, Punjab.
+  2. **Gaussian Plume & Puff Dispersion Model:**
+     * Irwin vertical wind shear profile: $u(z) = u_{10}(z/10)^p$.
+     * Briggs buoyant plume rise: $\Delta H = f(F_b, F_m, u, \text{Stability})$.
+     * Briggs continuous rational formulas for $\sigma_y(x)$ and $\sigma_z(x)$ across all 12 stability regimes.
+     * Boundary layer 5-term method of images reflection with uniform mixing transition ($\sigma_z \ge 1.6 z_i$).
+     * Closed-form statutory isopleths (`HAZARDOUS`, `SEVERE`, `MODERATE`, `ADVISORY`) in $< 1\text{ ms}$.
+     * Transient Lagrangian puff milestones ($5, 15, 30, 60\text{ mins}$) with arrival countdown timers.
+     * Backwards-compatible legacy exposure cone mapping for seamless frontend integration.
   3. **Geospatial Infrastructure Intersection:**
-     * Spatial query engine using `Shapely` against pre-mapped vulnerable urban assets (schools, hospitals, residential wards, informal settlements) in Delhi, Bengaluru, Kanpur, Mumbai.
-     * Estimated arrival time calculation: $t = (d / u) \times 60 \text{ mins}$.
-  4. **DevOps, Docker & Cloud Run Deployment:**
+     * Catalog of 25+ real-world schools, healthcare centers, and dense residential wards across 5 Indian archetypes.
+     * Estimated arrival time calculation: $t = (d / u) \times 60 \text{ mins}$ and spatial distance filters.
+  4. **DevOps, Docker, Vercel & Cloud Run Deployment:**
      * Multi-container Docker configuration for local and cloud environments.
+     * Vercel frontend build configuration (`frontend/vercel.json` & root `vercel.json`).
      * Google Cloud Run deployment scripts and environment secret configuration.
+     * 38 automated verification tests (unit, mass conservation, weak-PC latency benchmarks).
 * **Key Deliverable Files:**
   * `backend/app/services/dispersion_engine.py`
   * `backend/app/services/weather_service.py`
   * `backend/app/data/sensitive_infrastructure.py`
-  * `scripts/deploy_cloud_run.sh`
+  * `backend/tests/` (5 test suites, 38 passing tests)
+  * `frontend/vercel.json` & `vercel.json`
+  * `docs/ROLE_4_HANDOVER.md`
   * `docker-compose.yml`
 
 ---
