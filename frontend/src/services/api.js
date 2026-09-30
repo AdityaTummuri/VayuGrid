@@ -1,6 +1,7 @@
 import { MOCK_INCIDENTS_ALL, MOCK_INCIDENT_DELHI } from '../constants/mockData';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api/v1';
+const rawUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BASE_URL = rawUrl.endsWith('/api/v1') ? rawUrl : `${rawUrl.replace(/\/$/, '')}/api/v1`;
 
 /**
  * Robust hybrid API service: attempts live FastAPI backend calls,

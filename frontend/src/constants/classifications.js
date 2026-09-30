@@ -162,10 +162,13 @@ export const CLASSIFICATION_META = {
 };
 
 export const LANGUAGE_META = [
-  { code: 'en', label: 'English',   nativeName: 'English',  bcp47: 'en-IN', flag: '🇮🇳' },
   { code: 'hi', label: 'Hindi',     nativeName: 'हिंदी',    bcp47: 'hi-IN', flag: '🇮🇳' },
-  { code: 'te', label: 'Telugu',    nativeName: 'తెలుగు',   bcp47: 'te-IN', flag: '🇮🇳' },
+  { code: 'en', label: 'English',   nativeName: 'English',  bcp47: 'en-IN', flag: '🇮🇳' },
   { code: 'kn', label: 'Kannada',   nativeName: 'ಕನ್ನಡ',   bcp47: 'kn-IN', flag: '🇮🇳' },
+  { code: 'pa', label: 'Punjabi',   nativeName: 'ਪੰਜਾਬੀ',   bcp47: 'pa-IN', flag: '🇮🇳' },
+  { code: 'mr', label: 'Marathi',   nativeName: 'मराठी',    bcp47: 'mr-IN', flag: '🇮🇳' },
+  { code: 'te', label: 'Telugu',    nativeName: 'తెలుగు',   bcp47: 'te-IN', flag: '🇮🇳' },
   { code: 'ta', label: 'Tamil',     nativeName: 'தமிழ்',   bcp47: 'ta-IN', flag: '🇮🇳' },
   { code: 'ml', label: 'Malayalam', nativeName: 'മലയാളം',  bcp47: 'ml-IN', flag: '🇮🇳' },
+  { code: 'gu', label: 'Gujarati',  nativeName: 'ગુજરાતી',  bcp47: 'gu-IN', flag: '🇮🇳' },
 ];

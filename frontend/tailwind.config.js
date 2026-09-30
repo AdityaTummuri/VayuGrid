@@ -6,16 +6,16 @@ export default {
     extend: {
       colors: {
         app: {
-          bg: '#090D16',       // Deep mission control slate base
-          panel: '#0F172A',    // Structured container/sidebar
-          surface: '#151F32',  // Table row / card surface
-          elevated: '#1E293B', // High-contrast popovers / headers
-          hover: '#1E2A3E',    // Interactive hover state
+          bg: '#F1F5F9',       // Clean, professional GovTech slate-100 canvas
+          panel: '#FFFFFF',    // Crisp white structured container
+          surface: '#F8FAFC',  // Subtle slate-50 card / table surface
+          elevated: '#FFFFFF', // High-contrast popovers & modal cards
+          hover: '#F1F5F9',    // Hover state
         },
         border: {
-          subtle: '#1E293B',
-          strong: '#334155',
-          active: '#38BDF8',
+          subtle: '#E2E8F0',   // Hairline Slate-200 border
+          strong: '#CBD5E1',   // Slate-300 border
+          active: '#2563EB',   // Civic Blue
         },
         civic: {
           DEFAULT: '#2563EB',
@@ -39,8 +39,11 @@ export default {
         '2xs': ['0.6875rem', { lineHeight: '0.875rem' }],
       },
       boxShadow: {
-        'panel': '0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4)',
-        'subtle': '0 2px 8px -2px rgba(0, 0, 0, 0.5)',
+        'card': '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
+        'card-hover': '0 10px 20px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04)',
+        'elevated': '0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04)',
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'inner-light': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.8)',
       },
     },
   },

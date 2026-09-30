@@ -4,7 +4,7 @@ import { getAqiTier } from '../../constants/cities';
 export function AqiSparkline({ 
   data = [180, 195, 210, 240, 280, 310, 345, 360, 375, 390, 365, 342], 
   height = 48, 
-  strokeColor = '#F59E0B', 
+  strokeColor = '#D97706', 
   label = '24H TELEMETRY' 
 }) {
   const [hoverIdx, setHoverIdx] = useState(null);
@@ -37,28 +37,28 @@ export function AqiSparkline({
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      <div className="flex items-center justify-between text-3xs font-mono text-slate-400">
-        <span className="uppercase tracking-wider font-semibold">{label}</span>
+      <div className="flex items-center justify-between text-3xs font-mono text-slate-500">
+        <span className="uppercase tracking-wider font-bold">{label}</span>
         <span className="font-tabular font-bold" style={{ color: activeTier.color }}>
           {activePoint.val} AQI
         </span>
       </div>
 
-      <div className="relative w-full h-[48px] bg-slate-900/50 rounded border border-slate-800/80 p-1 flex items-center">
+      <div className="relative w-full h-[48px] bg-slate-50 rounded-lg border border-slate-200 p-1 flex items-center shadow-2xs">
         <svg 
           viewBox={`0 0 ${width} ${height}`} 
           className="w-full h-full overflow-visible"
           onMouseLeave={() => setHoverIdx(null)}
         >
           <defs>
-            <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={strokeColor} stopOpacity="0.35" />
+            <linearGradient id="sparklineGradLight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
               <stop offset="100%" stopColor={strokeColor} stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
           {/* Underfill Area */}
-          <path d={areaD} fill="url(#sparklineGrad)" />
+          <path d={areaD} fill="url(#sparklineGradLight)" />
 
           {/* Sparkline Line */}
           <path d={pathD} fill="none" stroke={strokeColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -71,7 +71,7 @@ export function AqiSparkline({
               cy={pt.y}
               r={hoverIdx === idx ? 4 : 2}
               fill={hoverIdx === idx ? activeTier.color : strokeColor}
-              stroke="#090D16"
+              stroke="#FFFFFF"
               strokeWidth={1.5}
               className="cursor-pointer transition-all"
               onMouseEnter={() => setHoverIdx(idx)}
@@ -85,16 +85,16 @@ export function AqiSparkline({
               y1={0}
               x2={activePoint.x}
               y2={height}
-              stroke="#94A3B8"
+              stroke="#64748B"
               strokeWidth={1}
               strokeDasharray="2 2"
-              opacity={0.6}
+              opacity={0.7}
             />
           )}
         </svg>
       </div>
 
-      <div className="flex items-center justify-between text-3xs font-mono text-slate-500">
+      <div className="flex items-center justify-between text-3xs font-mono text-slate-400">
         <span>MIN {minVal}</span>
         <span>MAX {maxVal}</span>
       </div>

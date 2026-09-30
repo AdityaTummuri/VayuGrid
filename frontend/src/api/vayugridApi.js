@@ -1,7 +1,8 @@
 import { CITIES, DEFAULT_CITY } from '../constants/cities';
 import { MOCK_INCIDENTS_ALL, MOCK_INCIDENT_DELHI } from '../constants/mockData';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const rawUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const API_BASE = rawUrl.endsWith('/api/v1') ? rawUrl : `${rawUrl.replace(/\/$/, '')}/api/v1`;
 
 /**
  * Fetch statutory monitoring cities
@@ -13,7 +14,27 @@ export async function fetchCities() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    return Array.isArray(data) && data.length > 0 ? data : CITIES;
+    if (Array.isArray(data) && data.length > 0) {
+      return data.map((c) => {
+        const local = CITIES.find((loc) => loc.id === c.id || (c.id === 'delhi_ncr' && loc.id === 'delhi'));
+        return {
+          ...local,
+          ...c,
+          id: c.id === 'delhi_ncr' ? 'delhi' : c.id,
+          state: c.state || local?.state || 'India',
+          current_aqi: c.current_aqi ?? local?.current_aqi ?? 250,
+          category: c.category ?? local?.category ?? 'POOR',
+          primary_pollutant: c.primary_pollutant ?? local?.primary_pollutant ?? 'PM2.5',
+          cpcb_stations_count: c.cpcb_stations_count ?? local?.cpcb_stations_count ?? 12,
+          active_incidents: c.active_incidents ?? local?.active_incidents ?? 4,
+          center: {
+            lat: c.center?.lat ?? local?.center?.lat ?? 28.6139,
+            lng: c.center?.lng ?? c.center?.lon ?? local?.center?.lng ?? 77.2090,
+          },
+        };
+      });
+    }
+    return CITIES;
   } catch (err) {
     console.warn('[VayuGrid API] Telemetry cities unreachable, using CPCB verified defaults:', err.message);
     return CITIES;
@@ -24,39 +45,69 @@ export async function fetchCities() {
  * Fetch active pollution incidents & dispersion cones for city
  */
 export async function fetchActiveIncidents(cityId = 'delhi') {
+  const normCityId = cityId === 'delhi_ncr' ? 'delhi' : cityId;
+
   try {
-    const res = await fetch(`${API_BASE}/incidents/active?city_id=${cityId}`, {
+    const res = await fetch(`${API_BASE}/incidents/active?city_id=${normCityId}`, {
       headers: { 'Accept': 'application/json' },
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    return Array.isArray(data) && data.length > 0 ? data : MOCK_INCIDENTS_ALL;
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map((inc) => ({
+          ...inc,
+          location: {
+            ...inc.location,
+            lat: inc.location?.lat,
+            lng: inc.location?.lng ?? inc.location?.lon,
+          },
+        }));
+      }
+    }
   } catch (err) {
-    console.warn(`[VayuGrid API] Active incidents for ${cityId} unreachable, using fallback telemetry:`, err.message);
-    // Filter or adjust mock incidents for the selected city
-    const city = CITIES.find(c => c.id === cityId) || DEFAULT_CITY;
-    return MOCK_INCIDENTS_ALL.map((inc, idx) => ({
+    console.warn(`[VayuGrid API] Active incidents for ${normCityId} unreachable, using fallback telemetry:`, err.message);
+  }
+
+  // Ensure incidents are localized to the selected city's actual geographic coordinates
+  const city = CITIES.find((c) => c.id === normCityId || (normCityId === 'delhi' && c.id === 'delhi_ncr')) || DEFAULT_CITY;
+  const cLat = city.center?.lat ?? 28.6139;
+  const cLng = city.center?.lng ?? city.center?.lon ?? 77.2090;
+
+  return MOCK_INCIDENTS_ALL.map((inc, idx) => {
+    const latOffset = idx === 0 ? 0.012 : idx === 1 ? -0.015 : 0.018;
+    const lngOffset = idx === 0 ? 0.014 : idx === 1 ? 0.021 : -0.016;
+    const incLat = cLat + latOffset;
+    const incLng = cLng + lngOffset;
+
+    return {
       ...inc,
-      city_id: cityId,
+      city_id: city.id,
+      ticket_id: `VAYU-${city.name.slice(0, 3).toUpperCase()}-2026-${String(idx + 101).padStart(3, '0')}`,
       location: {
         ...inc.location,
-        lat: city.center.lat + (idx * 0.015 - 0.01),
-        lng: city.center.lng + (idx * 0.018 - 0.01),
-        address_hint: `${city.name} Monitored Grid Sector ${idx + 1}`,
+        lat: incLat,
+        lng: incLng,
+        address_hint: `${city.name} Civic Sector ${idx + 2}, Industrial & Transit Belt`,
+        ward_no: `Ward ${idx + 12}-${city.name.slice(0, 2).toUpperCase()}`,
       },
       downwind_exposure_cone: {
         ...inc.downwind_exposure_cone,
-        origin: {
-          lat: city.center.lat + (idx * 0.015 - 0.01),
-          lng: city.center.lng + (idx * 0.018 - 0.01),
-        },
-        boundary_polygon: inc.downwind_exposure_cone.boundary_polygon.map(pt => ({
-          lat: pt.lat - 28.6139 + city.center.lat,
-          lng: pt.lng - 77.2090 + city.center.lng,
-        })),
+        origin: { lat: incLat, lng: incLng },
+        boundary_polygon: [
+          { lat: incLat, lng: incLng },
+          { lat: incLat + 0.018, lng: incLng + 0.024 },
+          { lat: incLat + 0.026, lng: incLng + 0.015 },
+          { lat: incLat + 0.012, lng: incLng - 0.008 },
+          { lat: incLat, lng: incLng },
+        ],
       },
-    }));
-  }
+      impacted_infrastructure: inc.impacted_infrastructure.map((infra, infIdx) => ({
+        ...infra,
+        lat: incLat + 0.007 * (infIdx + 1),
+        lng: incLng + 0.009 * (infIdx + 1),
+      })),
+    };
+  });
 }
 
 /**
@@ -73,12 +124,12 @@ export async function submitAuditReport(formData) {
   } catch (err) {
     console.warn('[VayuGrid API] AI Forensic Audit service offline, producing simulated forensic audit:', err.message);
     // Simulate high-density forensic analysis delay
-    await new Promise(r => setTimeout(r, 1200));
-    
+    await new Promise((r) => setTimeout(r, 1200));
+
     // Extract lat/lng from form data if present
     const lat = parseFloat(formData.get('latitude')) || 28.6289;
     const lng = parseFloat(formData.get('longitude')) || 77.2065;
-    
+
     return {
       ticket_id: `VAYU-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
       timestamp: new Date().toISOString(),
@@ -160,7 +211,7 @@ export async function dispatchIncidentAction(ticketId, actionPayload) {
     return await res.json();
   } catch (err) {
     console.warn(`[VayuGrid API] Action dispatch for ${ticketId} simulated locally:`, err.message);
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 600));
     return {
       success: true,
       ticket_id: ticketId,
@@ -175,13 +226,33 @@ export async function dispatchIncidentAction(ticketId, actionPayload) {
 }
 
 /**
+ * Converts compass degrees to 16-point meteorological cardinal direction
+ */
+function getWindCompassDirection(deg) {
+  if (deg === undefined || deg === null) return 'NE';
+  const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const idx = Math.round(deg / 22.5) % 16;
+  return dirs[idx];
+}
+
+/**
  * Fetch micro-meteorology telemetry
  */
 export async function fetchWeatherTelemetry(lat, lng) {
   try {
     const res = await fetch(`${API_BASE}/telemetry/weather?lat=${lat}&lon=${lng}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    return {
+      wind_bearing_deg: data.wind_direction_deg,
+      wind_direction: getWindCompassDirection(data.wind_direction_deg),
+      wind_speed_mps: data.wind_speed_ms,
+      ambient_temp_c: data.temperature_c,
+      humidity_pct: data.humidity_pct,
+      atmospheric_stability: `Class ${data.stability_class}`,
+      pbl_height_m: data.planetary_boundary_layer_height_m,
+      sensor_source: data.source_attribution || 'OPEN_METEO_LIVE',
+    };
   } catch (err) {
     return {
       wind_bearing_deg: 45,

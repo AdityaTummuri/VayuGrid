@@ -125,3 +125,9 @@ class CityMetadata(BaseModel):
     typical_pbl_summer_m: float = Field(
         1400.0, description="Typical summer boundary layer capping height (m)"
     )
+    current_aqi: int = Field(250, description="Representative statutory AQI")
+    category: str = Field("POOR", description="AQI category")
+    primary_pollutant: str = Field("PM2.5", description="Primary dominant pollutant")
+    cpcb_stations_count: int = Field(12, description="Number of CAAQMS monitoring stations")
+    state: str = Field("India", description="State or territory name")
+

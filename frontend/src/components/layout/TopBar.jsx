@@ -15,26 +15,29 @@ export function TopBar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-app-panel border-b border-border-subtle text-slate-200">
+    <header className="sticky top-0 z-[1000] bg-white border-b border-border-subtle text-slate-900 shadow-sm">
+      {/* Official GovTech Hairline Accent Strip */}
+      <div className="h-0.5 w-full bg-gradient-to-r from-[#FF9933] via-slate-200 to-[#138808]" />
+
       {/* Statutory Top Banner Strip */}
-      <div className="bg-app-bg px-4 py-1 text-2xs text-slate-400 flex items-center justify-between border-b border-border-subtle/60">
+      <div className="bg-slate-100/80 px-4 py-1 text-2xs text-slate-600 flex items-center justify-between border-b border-border-subtle">
         <div className="flex items-center gap-3">
-          <span className="font-semibold text-slate-300 tracking-wider">
+          <span className="font-bold text-slate-800 tracking-wider">
             GOVT OF INDIA DIGITAL PUBLIC INFRASTRUCTURE
           </span>
-          <span className="text-slate-600">|</span>
-          <span className="text-slate-400">Track 2: Clean Air & Climate Resilience</span>
-          <span className="text-slate-600">|</span>
-          <div className="flex items-center gap-1.5 text-emerald-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="font-mono text-2xs font-medium">CPCB CENTRAL INGESTION: OPERATIONAL</span>
+          <span className="text-slate-300">|</span>
+          <span className="text-slate-600">Track 2: Clean Air & Climate Resilience</span>
+          <span className="text-slate-300">|</span>
+          <div className="flex items-center gap-1.5 text-emerald-700">
+            <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
+            <span className="font-mono text-2xs font-semibold">CPCB CENTRAL INGESTION: OPERATIONAL</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 font-mono text-slate-300">
+        <div className="flex items-center gap-4 font-mono text-slate-700">
           <span className="text-slate-500 text-2xs">LATENCY: 38ms</span>
-          <span className="text-slate-600">•</span>
-          <span className="text-slate-200 font-medium font-tabular">{istTime}</span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-800 font-semibold font-tabular">{istTime}</span>
         </div>
       </div>
 
@@ -43,19 +46,19 @@ export function TopBar() {
         {/* Brand & Identity */}
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="h-9 w-9 rounded border border-blue-500/30 bg-blue-950/40 flex items-center justify-center text-blue-400 font-mono font-bold text-sm tracking-tight shadow-sm">
+            <div className="h-9 w-9 rounded-lg border border-blue-200 bg-blue-50 flex items-center justify-center text-blue-700 font-mono font-bold text-sm tracking-tight shadow-sm">
               VG
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-white group-hover:text-blue-400 transition-colors">
+                <span className="font-bold text-base tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
                   VayuGrid
                 </span>
-                <span className="text-xs text-blue-400/80 font-medium tracking-wide">
+                <span className="text-xs text-blue-600 font-semibold tracking-wide">
                   (वायु-सूत्र)
                 </span>
               </div>
-              <p className="text-2xs text-slate-400 tracking-normal font-normal">
+              <p className="text-2xs text-slate-500 tracking-normal font-normal">
                 National Air Quality Intelligence & Enforcement Desk
               </p>
             </div>
@@ -70,10 +73,10 @@ export function TopBar() {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                     isActive
-                      ? 'bg-civic text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-app-hover'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -90,28 +93,20 @@ export function TopBar() {
 
           {/* Micro-Meteorology Strip */}
           {weather && (
-            <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded bg-app-surface border border-border-subtle text-xs">
-              <div className="flex items-center gap-1.5 text-slate-300">
-                <Wind className="h-3.5 w-3.5 text-sky-400" />
-                <span className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Surface Wind:</span>
-                <span className="font-mono font-medium text-slate-200 font-tabular">
+            <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-50 border border-border-subtle text-xs shadow-2xs">
+              <div className="flex items-center gap-1.5 text-slate-700">
+                <Wind className="h-3.5 w-3.5 text-blue-600" />
+                <span className="text-2xs text-slate-500 uppercase tracking-wider font-semibold">Surface Wind:</span>
+                <span className="font-mono font-bold text-slate-800 font-tabular">
                   {weather.wind_direction} @ {weather.wind_speed_mps} m/s
                 </span>
               </div>
-              <span className="text-slate-600">|</span>
-              <div className="text-2xs text-slate-400 font-mono">
-                {weather.ambient_temp_c}°C • {weather.atmospheric_stability?.split(' ')[1] || 'Neutral'}
-              </div>
             </div>
           )}
-
-          {/* Active Status Pill */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-xs font-mono">
-            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-            <span className="text-slate-300 text-2xs uppercase tracking-wider">SECURE GRID</span>
-          </div>
         </div>
       </div>
     </header>
   );
 }
+
+export default TopBar;

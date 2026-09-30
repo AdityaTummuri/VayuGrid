@@ -19,16 +19,16 @@ weather_service = WeatherService()
     summary="Fetch live micrometeorological vectors",
 )
 async def get_weather_telemetry(
-    latitude: float = Query(
-        ..., ge=-90.0, le=90.0, description="Latitude in decimal degrees"
-    ),
-    longitude: float = Query(
-        ..., ge=-180.0, le=180.0, description="Longitude in decimal degrees"
-    ),
+    latitude: Optional[float] = Query(None, ge=-90.0, le=90.0, description="Latitude in decimal degrees"),
+    longitude: Optional[float] = Query(None, ge=-180.0, le=180.0, description="Longitude in decimal degrees"),
+    lat: Optional[float] = Query(None, ge=-90.0, le=90.0, description="Latitude alias"),
+    lon: Optional[float] = Query(None, ge=-180.0, le=180.0, description="Longitude alias"),
     city_id: Optional[str] = Query(
         None, description="Optional city archetype slug (e.g., 'delhi_ncr')"
     ),
 ):
+    actual_lat = latitude if latitude is not None else (lat if lat is not None else 28.6139)
+    actual_lon = longitude if longitude is not None else (lon if lon is not None else 77.2090)
     """
     Retrieves live boundary layer height, wind speed, wind direction, downwind advection bearing,
     and Pasquill-Gifford atmospheric stability classification from Open-Meteo.
@@ -36,8 +36,8 @@ async def get_weather_telemetry(
     """
     try:
         telemetry = await weather_service.get_live_weather(
-            lat=latitude,
-            lon=longitude,
+            lat=actual_lat,
+            lon=actual_lon,
             city_id=city_id,
         )
         return telemetry

@@ -10,10 +10,10 @@ export function ClassificationTag({ classificationKey, className = '' }) {
 
   return (
     <div className={`inline-flex items-center gap-1.5 ${className}`}>
-      <span className="font-mono text-2xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold border border-slate-700">
+      <span className="font-mono text-2xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-bold border border-slate-300">
         {meta.code}
       </span>
-      <span className="text-xs font-medium text-slate-200 truncate">
+      <span className="text-xs font-bold text-slate-900 truncate">
         {meta.label}
       </span>
     </div>

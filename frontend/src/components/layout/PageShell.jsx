@@ -4,7 +4,7 @@ import { Toast } from './Toast';
 
 export function PageShell({ children, className = '' }) {
   return (
-    <div className="min-h-screen flex flex-col bg-app-bg text-slate-100 font-sans">
+    <div className="min-h-screen flex flex-col bg-slate-100/90 text-slate-900 font-sans">
       <TopBar />
       <main className={`flex-1 flex flex-col ${className}`}>
         {children}

@@ -10,6 +10,7 @@ import logging
 from typing import Optional, Dict, List
 import httpx
 
+from app.core.config import settings
 from app.models.weather import (
     WeatherTelemetry,
     StabilityClass,
@@ -24,6 +25,7 @@ REGIONAL_ARCHETYPES: Dict[str, CityMetadata] = {
     "delhi_ncr": CityMetadata(
         id="delhi_ncr",
         name="Delhi-NCR",
+        state="National Capital Region",
         center={"lat": 28.6139, "lon": 77.2090},
         default_zoom=12,
         archetype="High Density Urban & Municipal Solid Waste Burning",
@@ -31,10 +33,15 @@ REGIONAL_ARCHETYPES: Dict[str, CityMetadata] = {
         terrain=TerrainCategory.URBAN,
         typical_pbl_winter_m=420.0,
         typical_pbl_summer_m=1350.0,
+        current_aqi=342,
+        category="VERY_POOR",
+        primary_pollutant="PM2.5",
+        cpcb_stations_count=40,
     ),
     "bengaluru": CityMetadata(
         id="bengaluru",
         name="Bengaluru",
+        state="Karnataka",
         center={"lat": 12.9716, "lon": 77.5946},
         default_zoom=12,
         archetype="Construction Corridor & Transit Resuspension",
@@ -42,10 +49,15 @@ REGIONAL_ARCHETYPES: Dict[str, CityMetadata] = {
         terrain=TerrainCategory.URBAN,
         typical_pbl_winter_m=750.0,
         typical_pbl_summer_m=1500.0,
+        current_aqi=118,
+        category="MODERATE",
+        primary_pollutant="PM10 / NO2",
+        cpcb_stations_count=12,
     ),
     "kanpur": CityMetadata(
         id="kanpur",
         name="Kanpur",
+        state="Uttar Pradesh",
         center={"lat": 26.4499, "lon": 80.3319},
         default_zoom=12,
         archetype="Tannery & Industrial Stack Emission Corridor",
@@ -53,10 +65,15 @@ REGIONAL_ARCHETYPES: Dict[str, CityMetadata] = {
         terrain=TerrainCategory.URBAN,
         typical_pbl_winter_m=480.0,
         typical_pbl_summer_m=1200.0,
+        current_aqi=389,
+        category="VERY_POOR",
+        primary_pollutant="PM2.5 / Cr-VI",
+        cpcb_stations_count=8,
     ),
     "mumbai": CityMetadata(
         id="mumbai",
         name="Mumbai Metropolitan",
+        state="Maharashtra",
         center={"lat": 19.0760, "lon": 72.8777},
         default_zoom=12,
         archetype="Coastal Inversion & High-Rise Construction Dust",
@@ -64,10 +81,15 @@ REGIONAL_ARCHETYPES: Dict[str, CityMetadata] = {
         terrain=TerrainCategory.COASTAL,
         typical_pbl_winter_m=600.0,
         typical_pbl_summer_m=1100.0,
+        current_aqi=165,
+        category="MODERATE",
+        primary_pollutant="PM2.5 / PM10",
+        cpcb_stations_count=24,
     ),
     "punjab": CityMetadata(
         id="punjab",
         name="Punjab Agrarian Belt (Ludhiana-Sangrur)",
+        state="Punjab",
         center={"lat": 30.9010, "lon": 75.8573},
         default_zoom=11,
         archetype="Seasonal Biomass & Agricultural Stubble Burning",
@@ -75,6 +97,10 @@ REGIONAL_ARCHETYPES: Dict[str, CityMetadata] = {
         terrain=TerrainCategory.RURAL_OPEN,
         typical_pbl_winter_m=520.0,
         typical_pbl_summer_m=1400.0,
+        current_aqi=412,
+        category="SEVERE",
+        primary_pollutant="PM2.5 / Black Carbon",
+        cpcb_stations_count=14,
     ),
 }
 
@@ -264,6 +290,84 @@ class WeatherService:
             source_attribution=f"REGIONAL_ARCHETYPE_FALLBACK_{matched_city.id.upper()}",
         )
 
+    async def fetch_from_openweather(
+        self,
+        lat: float,
+        lon: float,
+        city_id: Optional[str] = None,
+    ) -> Optional[WeatherTelemetry]:
+        """
+        Fetches live meteorological vectors from OpenWeather API when OPENWEATHER_API_KEY is provided.
+        """
+        api_key = settings.OPENWEATHER_API_KEY
+        if not api_key:
+            return None
+
+        url = settings.OPENWEATHER_API_URL or "https://api.openweathermap.org/data/2.5/weather"
+        params = {
+            "lat": lat,
+            "lon": lon,
+            "appid": api_key,
+            "units": "metric",
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
+                resp = await client.get(url, params=params)
+
+            if resp.status_code != 200:
+                logger.warning(f"OpenWeather API returned status {resp.status_code}.")
+                return None
+
+            data = resp.json()
+            main = data.get("main", {})
+            wind = data.get("wind", {})
+
+            temp_c = float(main.get("temp", 28.0))
+            rh = float(main.get("humidity", 55.0))
+            pressure = float(main.get("pressure", 1013.25))
+            wind_speed_ms = float(wind.get("speed", 3.5))
+            wind_speed_kmh = wind_speed_ms * 3.6
+            wind_dir = float(wind.get("deg", 270.0))
+
+            downwind_bearing = self.compute_downwind_bearing(wind_dir)
+            stab = self.determine_stability_class(
+                wind_speed_ms=wind_speed_ms,
+                is_day=True,
+                solar_radiation_w_m2=450.0,
+            )
+
+            matched_city = (
+                REGIONAL_ARCHETYPES.get(city_id.lower())
+                if city_id and city_id.lower() in REGIONAL_ARCHETYPES
+                else self.identify_closest_city(lat, lon)
+            )
+            terrain = matched_city.terrain if matched_city else TerrainCategory.URBAN
+            u_star = self.estimate_friction_velocity(wind_speed_ms, terrain)
+
+            return WeatherTelemetry(
+                latitude=lat,
+                longitude=lon,
+                wind_speed_kmh=round(wind_speed_kmh, 2),
+                wind_speed_ms=round(wind_speed_ms, 2),
+                wind_direction_deg=round(wind_dir, 2),
+                downwind_bearing_deg=downwind_bearing,
+                temperature_c=round(temp_c, 2),
+                temperature_k=round(temp_c + 273.15, 2),
+                humidity_pct=round(rh, 2),
+                planetary_boundary_layer_height_m=520.0,
+                surface_pressure_hpa=round(pressure, 2),
+                solar_radiation_w_m2=450.0,
+                is_day=True,
+                stability_class=stab,
+                terrain=terrain,
+                friction_velocity_u_star_ms=u_star,
+                source_attribution="OPENWEATHER_LIVE",
+            )
+        except Exception as exc:
+            logger.warning(f"Error calling OpenWeather API: {exc}")
+            return None
+
     async def get_live_weather(
         self,
         lat: float,
@@ -271,9 +375,15 @@ class WeatherService:
         city_id: Optional[str] = None,
     ) -> WeatherTelemetry:
         """
-        Fetches live boundary layer and vector wind telemetry from Open-Meteo.
+        Fetches live boundary layer and vector wind telemetry from OpenWeather or Open-Meteo.
         Automatically falls back to regional microclimate archetypes on error or timeout.
         """
+        # 1. Attempt OpenWeather if API key is present
+        if settings.OPENWEATHER_API_KEY:
+            ow_res = await self.fetch_from_openweather(lat, lon, city_id)
+            if ow_res:
+                return ow_res
+
         params = {
             "latitude": lat,
             "longitude": lon,

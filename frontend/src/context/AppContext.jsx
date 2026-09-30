@@ -53,10 +53,13 @@ export function AppProvider({ children }) {
   const loadCityData = useCallback(async (city) => {
     if (!city) return;
     setIsLoadingIncidents(true);
+    setActiveIncident(null); // Clear previous city's active incident immediately
     try {
+      const cLat = city.center?.lat ?? 28.6139;
+      const cLng = city.center?.lng ?? city.center?.lon ?? 77.2090;
       const [incidentList, weatherData] = await Promise.all([
         fetchActiveIncidents(city.id),
-        fetchWeatherTelemetry(city.center.lat, city.center.lng),
+        fetchWeatherTelemetry(cLat, cLng),
       ]);
       setIncidents(incidentList);
       setWeather(weatherData);
@@ -77,11 +80,23 @@ export function AppProvider({ children }) {
     loadCityData(selectedCity);
   }, [selectedCity, loadCityData]);
 
-  // Handle City Change
-  const handleSelectCity = useCallback((cityId) => {
-    const found = cities.find(c => c.id === cityId);
+  // Handle City Change (accepts cityId string or city object)
+  const handleSelectCity = useCallback((cityInput) => {
+    if (!cityInput) return;
+    const targetId = typeof cityInput === 'string' ? cityInput : cityInput?.id;
+    const found = cities.find(
+      c => c.id === targetId || (targetId === 'delhi' && c.id === 'delhi_ncr') || (targetId === 'delhi_ncr' && c.id === 'delhi')
+    );
     if (found) {
-      setSelectedCity(found);
+      const normalizedCity = {
+        ...found,
+        id: found.id === 'delhi_ncr' ? 'delhi' : found.id,
+        center: {
+          lat: found.center?.lat ?? 28.6139,
+          lng: found.center?.lng ?? found.center?.lon ?? 77.2090,
+        },
+      };
+      setSelectedCity(normalizedCity);
     }
   }, [cities]);
 

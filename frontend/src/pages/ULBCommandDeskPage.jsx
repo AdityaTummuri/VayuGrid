@@ -14,39 +14,39 @@ export function ULBCommandDeskPage() {
   const pendingCount = incidents.filter((i) => i.status !== 'DISPATCHED').length;
 
   return (
-    <PageShell className="h-[calc(100vh-4rem)] overflow-hidden flex flex-col justify-between">
+    <PageShell className="h-[calc(100vh-4rem)] overflow-hidden flex flex-col justify-between bg-slate-50">
       {/* Executive Command Metric Ribbon */}
-      <div className="bg-app-panel border-b border-border-subtle px-4 py-2 flex flex-wrap items-center justify-between gap-4 text-xs font-mono shrink-0">
+      <div className="bg-white border-b border-border-subtle px-4 py-2 flex flex-wrap items-center justify-between gap-4 text-xs font-mono shrink-0 shadow-2xs">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-sans font-semibold uppercase text-2xs">MONITORED SECTOR:</span>
-            <span className="text-white font-bold tracking-wide">{selectedCity.name.toUpperCase()} COMMAND GRID</span>
+            <span className="text-slate-500 font-sans font-bold uppercase text-2xs">MONITORED SECTOR:</span>
+            <span className="text-slate-900 font-bold tracking-wide">{selectedCity.name.toUpperCase()} COMMAND GRID</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-4 text-slate-400 border-l border-border-subtle pl-4">
+          <div className="hidden sm:flex items-center gap-4 text-slate-500 border-l border-border-subtle pl-4">
             <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
-              <span className="text-red-400 font-bold font-tabular">{criticalCount}</span>
-              <span className="text-2xs text-slate-400">CRITICAL P0 PLUMES</span>
+              <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse"></span>
+              <span className="text-red-700 font-bold font-tabular">{criticalCount}</span>
+              <span className="text-2xs text-slate-600 font-medium">CRITICAL P0 PLUMES</span>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-amber-400 font-bold font-tabular">{pendingCount}</span>
-              <span className="text-2xs text-slate-400">AWAITING DISPATCH</span>
+              <span className="text-amber-700 font-bold font-tabular">{pendingCount}</span>
+              <span className="text-2xs text-slate-600 font-medium">AWAITING DISPATCH</span>
             </div>
           </div>
         </div>
 
         {/* Micro-Meteorological Readout */}
-        <div className="flex items-center gap-4 text-slate-400">
+        <div className="flex items-center gap-4 text-slate-600">
           <div className="flex items-center gap-1.5">
-            <Wind className="h-3.5 w-3.5 text-sky-400" />
-            <span className="text-slate-200 font-tabular">
+            <Wind className="h-3.5 w-3.5 text-blue-600" />
+            <span className="text-slate-800 font-bold font-tabular">
               {weather?.wind_direction || 'NE'} @ {weather?.wind_speed_mps || 4.8} m/s
             </span>
           </div>
-          <span>•</span>
-          <div className="flex items-center gap-1.5 text-emerald-400">
+          <span className="text-slate-300">•</span>
+          <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
             <Truck className="h-3.5 w-3.5" />
             <span className="text-2xs">6 SMOG UNITS STANDBY</span>
           </div>
@@ -54,14 +54,14 @@ export function ULBCommandDeskPage() {
       </div>
 
       {/* Main 3-Column Enterprise Mission Control Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden min-h-0">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden min-h-0 bg-slate-50">
         {/* Left Column: Live Incident Feed & Filter (col-span-3 = 25%) */}
         <div className="lg:col-span-3 h-full overflow-hidden border-r border-border-subtle">
           <IncidentQueue />
         </div>
 
-        {/* Center Column: Real Geographic Leaflet GIS Map (col-span-6 = 50%) */}
-        <div className="lg:col-span-6 h-full relative overflow-hidden bg-app-bg">
+        {/* Center Column: Real Geographic Leaflet GIS Map with OSM Tiles (col-span-6 = 50%) */}
+        <div className="lg:col-span-6 h-full relative overflow-hidden bg-slate-100">
           <CommandMap />
         </div>
 

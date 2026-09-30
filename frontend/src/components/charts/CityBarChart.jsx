@@ -8,8 +8,8 @@ export function CityBarChart({ cities, selectedCityId, onSelectCity }) {
 
   return (
     <div className="w-full flex flex-col gap-2.5">
-      <div className="flex items-center justify-between text-2xs font-mono text-slate-400 border-b border-border-subtle pb-2">
-        <span className="font-semibold uppercase tracking-wider text-slate-300">
+      <div className="flex items-center justify-between text-2xs font-mono text-slate-500 border-b border-border-subtle pb-2">
+        <span className="font-bold uppercase tracking-wider text-slate-800">
           PAN-INDIA STATUTORY ARCHETYPES
         </span>
         <span className="text-3xs text-slate-500 font-sans">
@@ -27,26 +27,30 @@ export function CityBarChart({ cities, selectedCityId, onSelectCity }) {
             <div
               key={city.id}
               onClick={() => onSelectCity && onSelectCity(city)}
-              className={`p-2.5 rounded transition-all cursor-pointer border ${
+              className={`p-3 rounded-lg transition-all cursor-pointer border ${
                 isSelected
-                  ? 'bg-slate-800/80 border-sky-500 shadow-md ring-1 ring-sky-500/30'
-                  : 'bg-app-surface/60 border-border-subtle hover:border-slate-600 hover:bg-app-surface'
+                  ? 'bg-blue-50/70 border-blue-500 shadow-sm ring-1 ring-blue-500/20'
+                  : 'bg-white border-border-subtle hover:border-slate-300 hover:bg-slate-50/80 shadow-2xs'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className={`font-bold ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                  <span className={`font-bold ${isSelected ? 'text-blue-900' : 'text-slate-900'}`}>
                     {city.name}
                   </span>
-                  <span className="font-mono text-3xs text-slate-400">
+                  <span className="font-mono text-3xs text-slate-500">
                     {city.archetype}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <span
-                    className="font-mono text-xs font-extrabold px-1.5 py-0.5 rounded font-tabular"
-                    style={{ backgroundColor: `${tier.color}20`, color: tier.color }}
+                    className="font-mono text-xs font-bold px-2 py-0.5 rounded-full font-tabular border"
+                    style={{ 
+                      backgroundColor: `${tier.color}15`, 
+                      color: tier.color,
+                      borderColor: `${tier.color}40`,
+                    }}
                   >
                     {city.current_aqi} AQI
                   </span>
@@ -54,9 +58,9 @@ export function CityBarChart({ cities, selectedCityId, onSelectCity }) {
               </div>
 
               {/* Progress Bar Container */}
-              <div className="relative w-full h-2 bg-slate-900 rounded overflow-hidden">
+              <div className="relative w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <div
-                  className="h-full rounded transition-all duration-700 ease-out"
+                  className="h-full rounded-full transition-all duration-700 ease-out"
                   style={{
                     width: `${percent}%`,
                     backgroundColor: tier.color,
@@ -64,9 +68,9 @@ export function CityBarChart({ cities, selectedCityId, onSelectCity }) {
                 />
               </div>
 
-              <div className="mt-1.5 flex items-center justify-between text-3xs font-mono text-slate-400">
+              <div className="mt-1.5 flex items-center justify-between text-3xs font-mono text-slate-500">
                 <span>{city.cpcb_stations_count} CPCB STATIONS</span>
-                <span className="text-amber-400 font-semibold">{city.active_incidents} INCIDENTS ACTIVE</span>
+                <span className="text-amber-800 font-semibold">{city.active_incidents} INCIDENTS ACTIVE</span>
               </div>
             </div>
           );

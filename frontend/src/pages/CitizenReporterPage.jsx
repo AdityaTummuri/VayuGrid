@@ -21,14 +21,13 @@ export function CitizenReporterPage() {
   const { addToast } = useApp();
 
   const handleQuickSampleSelect = (type) => {
-    // Generate synthetic mock image blob for instantaneous demo
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 300;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#1e293b';
+    ctx.fillStyle = '#f1f5f9';
     ctx.fillRect(0, 0, 400, 300);
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#dc2626';
     ctx.font = 'bold 20px monospace';
     ctx.fillText(`${type.toUpperCase()} EVIDENCE`, 30, 150);
 
@@ -111,25 +110,25 @@ export function CitizenReporterPage() {
   };
 
   return (
-    <PageShell className="py-6 px-4 max-w-7xl mx-auto w-full">
+    <PageShell className="py-6 px-4 max-w-7xl mx-auto w-full bg-slate-50 min-h-screen">
       {/* Page Header */}
       <div className="border-b border-border-subtle pb-4 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-blue-950/80 border border-blue-500/40 text-blue-300 font-mono text-2xs">
-              <Sparkles className="h-3 w-3 text-sky-400" />
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-mono text-2xs font-bold">
+              <Sparkles className="h-3 w-3 text-blue-600" />
               <span>GEMINI 2.5 FLASH FORENSIC INGEST</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white font-sans">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-sans">
               Citizen Environmental Grievance & Forensic Ingest
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300">
+            <p className="text-xs sm:text-sm text-slate-600">
               Submit verified photographic evidence of illegal municipal solid waste fires, industrial stack flares, or fugitive construction dust.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-2xs text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div className="flex items-center gap-2 font-mono text-2xs text-slate-600">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
             <span>AUDIT PIPELINE READY</span>
           </div>
         </div>
@@ -139,31 +138,31 @@ export function CitizenReporterPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Evidence & Telemetry Ingestion (7 cols = ~58%) */}
         <div className="lg:col-span-7 space-y-6">
-          <form onSubmit={handleSubmit} className="bg-app-panel border border-border-subtle rounded-lg p-5 space-y-5 shadow-xl">
+          <form onSubmit={handleSubmit} className="bg-white border border-border-subtle rounded-xl p-6 space-y-5 shadow-sm">
             {/* Quick Demo Sample Picker */}
-            <div className="p-3 rounded bg-slate-900/60 border border-slate-800">
-              <span className="text-2xs font-mono font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span className="text-2xs font-mono font-bold text-slate-700 uppercase tracking-wider block mb-2">
                 Quick Evaluator Benchmark Samples:
               </span>
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => handleQuickSampleSelect('plastic_burning')}
-                  className="px-2.5 py-1 rounded bg-red-950/60 border border-red-800/60 hover:border-red-600 text-red-300 font-mono text-2xs transition-colors"
+                  className="px-3 py-1.5 rounded-md bg-red-50 border border-red-200 hover:border-red-400 text-red-700 font-mono text-2xs font-bold transition-all shadow-2xs"
                 >
                   🔥 Plastic Burning
                 </button>
                 <button
                   type="button"
                   onClick={() => handleQuickSampleSelect('stubble_burning')}
-                  className="px-2.5 py-1 rounded bg-amber-950/60 border border-amber-800/60 hover:border-amber-600 text-amber-300 font-mono text-2xs transition-colors"
+                  className="px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200 hover:border-amber-400 text-amber-800 font-mono text-2xs font-bold transition-all shadow-2xs"
                 >
                   🌾 Stubble Burning
                 </button>
                 <button
                   type="button"
                   onClick={() => handleQuickSampleSelect('construction_dust')}
-                  className="px-2.5 py-1 rounded bg-sky-950/60 border border-sky-800/60 hover:border-sky-600 text-sky-300 font-mono text-2xs transition-colors"
+                  className="px-3 py-1.5 rounded-md bg-blue-50 border border-blue-200 hover:border-blue-400 text-blue-700 font-mono text-2xs font-bold transition-all shadow-2xs"
                 >
                   🏗️ Construction Dust
                 </button>
@@ -184,16 +183,16 @@ export function CitizenReporterPage() {
 
             {/* Context Notes */}
             <div className="space-y-1.5">
-              <label className="text-2xs font-mono font-semibold uppercase text-slate-300 tracking-wider flex items-center justify-between">
+              <label className="text-2xs font-mono font-bold uppercase text-slate-700 tracking-wider flex items-center justify-between">
                 <span>Field Context & Landmark Notes (Optional)</span>
-                <span className="text-slate-500 font-normal">Max 500 chars</span>
+                <span className="text-slate-400 font-normal">Max 500 chars</span>
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="e.g. Thick acrid black smoke originating behind school boundary wall near Sector 16..."
-                className="w-full bg-slate-900 border border-border-subtle focus:border-sky-500 rounded p-3 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none transition-colors"
+                className="w-full bg-white border border-slate-300 focus:border-blue-600 rounded-lg p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors shadow-2xs"
               />
             </div>
 
@@ -202,7 +201,7 @@ export function CitizenReporterPage() {
               <button
                 type="submit"
                 disabled={!file || isSubmitting}
-                className="flex-1 py-3 px-4 rounded bg-civic hover:bg-civic-hover text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="flex-1 py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {isSubmitting ? (
                   <>
@@ -221,7 +220,7 @@ export function CitizenReporterPage() {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="px-4 py-3 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs uppercase"
+                  className="px-4 py-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-bold uppercase"
                 >
                   CLEAR
                 </button>
@@ -235,14 +234,14 @@ export function CitizenReporterPage() {
           {auditResult ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-semibold text-emerald-400 flex items-center gap-1.5">
+                <span className="text-xs font-mono font-bold text-emerald-700 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>AUDIT COMPLETED</span>
                 </span>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="flex items-center gap-1 text-2xs font-mono text-slate-400 hover:text-white"
+                  className="flex items-center gap-1 text-2xs font-mono text-slate-500 hover:text-slate-900"
                 >
                   <RefreshCw className="h-3 w-3" />
                   <span>New Ingest</span>
@@ -251,54 +250,54 @@ export function CitizenReporterPage() {
               <AuditResultCard result={auditResult} />
             </div>
           ) : isSubmitting ? (
-            <div className="bg-app-panel border border-border-subtle rounded-lg p-6 space-y-4">
+            <div className="bg-white border border-border-subtle rounded-xl p-6 space-y-4 shadow-sm">
               <div className="text-center py-4">
-                <RefreshCw className="h-8 w-8 text-sky-400 animate-spin mx-auto mb-3" />
-                <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-mono">
+                <RefreshCw className="h-8 w-8 text-blue-600 animate-spin mx-auto mb-3" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
                   Executing Multimodal Gemini Forensics...
                 </h3>
-                <p className="text-2xs text-slate-400 mt-1 font-mono">
+                <p className="text-2xs text-slate-500 mt-1 font-mono">
                   Running optical density calculation, chlorinated pyrolysis matching, and boundary layer wind advection.
                 </p>
               </div>
               <LoadingSkeleton />
             </div>
           ) : (
-            <div className="bg-app-panel border border-border-subtle rounded-lg p-6 space-y-4 text-xs">
-              <div className="flex items-center gap-2 text-indigo-400 border-b border-border-subtle pb-3">
+            <div className="bg-white border border-border-subtle rounded-xl p-6 space-y-4 text-xs shadow-sm">
+              <div className="flex items-center gap-2 text-indigo-700 border-b border-border-subtle pb-3">
                 <Cpu className="w-4 h-4" />
                 <span className="font-mono text-2xs font-bold uppercase tracking-wider">
                   Real-time Forensic Verification Engine
                 </span>
               </div>
 
-              <div className="space-y-3 font-mono text-2xs text-slate-400">
+              <div className="space-y-3 font-mono text-2xs text-slate-600">
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 flex items-center justify-center font-bold shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center font-bold shrink-0">
                     1
                   </span>
                   <div>
-                    <span className="text-slate-200 font-bold block">Multimodal Optical Ingest</span>
+                    <span className="text-slate-900 font-bold block">Multimodal Optical Ingest</span>
                     <span>Extracts opacity, soot blackbody radiation, and flame spectrum via Gemini 2.5 Flash.</span>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded bg-sky-950 text-sky-400 border border-sky-800 flex items-center justify-center font-bold shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center font-bold shrink-0">
                     2
                   </span>
                   <div>
-                    <span className="text-slate-200 font-bold block">Atmospheric Plume Advection</span>
+                    <span className="text-slate-900 font-bold block">Atmospheric Plume Advection</span>
                     <span>Computes downwind exposure cone and sensitive receptor intersections.</span>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center justify-center font-bold shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold shrink-0">
                     3
                   </span>
                   <div>
-                    <span className="text-slate-200 font-bold block">Tamper-Evident Ticket Creation</span>
+                    <span className="text-slate-900 font-bold block">Tamper-Evident Ticket Creation</span>
                     <span>Generates statutory municipal ticket with Section 133 CrPC legal clauses.</span>
                   </div>
                 </div>

@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     VITE_BACKEND_URL: str = "http://localhost:8000"
 
     # Meteorological & Air Quality Data Sources
+    OPENWEATHER_API_KEY: Optional[str] = None
+    OPENWEATHER_API_URL: str = "https://api.openweathermap.org/data/2.5/weather"
     OPEN_METEO_API_URL: str = "https://api.open-meteo.com/v1/forecast"
     OPENAQ_API_KEY: Optional[str] = None
 
