@@ -54,14 +54,51 @@ export async function fetchActiveIncidents(cityId = 'delhi') {
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        return data.map((inc) => ({
-          ...inc,
-          location: {
-            ...inc.location,
-            lat: inc.location?.lat,
-            lng: inc.location?.lng ?? inc.location?.lon,
-          },
-        }));
+        return data.map((inc) => {
+          const lat = inc.location?.lat ?? inc.coordinates?.latitude ?? 28.6139;
+          const lng = inc.location?.lng ?? inc.location?.lon ?? inc.coordinates?.longitude ?? 77.2090;
+          return {
+            ...inc,
+            timestamp: inc.timestamp || inc.created_at || new Date().toISOString(),
+            classification: inc.classification || inc.verification?.source_classification || 'OPEN_MUNICIPAL_WASTE_BURNING',
+            severity_score: inc.severity_score ?? inc.verification?.severity_score ?? 0.85,
+            confidence: inc.confidence ?? inc.verification?.confidence_score ?? 0.94,
+            location: {
+              address_hint: inc.location?.address_hint || inc.coordinates?.address_hint || `Coordinates (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+              ward_no: inc.location?.ward_no || 'Ward 12-CZ',
+              lat,
+              lng,
+            },
+            coordinates: {
+              latitude: lat,
+              longitude: lng,
+              address_hint: inc.location?.address_hint || inc.coordinates?.address_hint,
+            },
+            downwind_exposure_cone: inc.downwind_exposure_cone || {
+              bearing_degrees: inc.meteorology?.downwind_bearing_deg || 90,
+              max_reach_km: 2.5,
+              boundary_polygon: [
+                { lat, lng },
+                { lat: lat + 0.015, lng: lng + 0.02 },
+                { lat: lat + 0.02, lng: lng + 0.01 },
+                { lat, lng },
+              ],
+            },
+            impacted_infrastructure: (inc.impacted_infrastructure || []).map((infra) => ({
+              ...infra,
+              lat: infra.lat ?? infra.latitude ?? lat + 0.007,
+              lng: infra.lng ?? infra.lon ?? infra.longitude ?? lng + 0.009,
+            })),
+            mitigation_options: inc.mitigation_options || [
+              {
+                action_id: 'ACTION-SMOG-01',
+                label: 'Deploy Water Mist Cannon',
+                type: 'SMOG_GUN',
+                response_eta_minutes: 12,
+              },
+            ],
+          };
+        });
       }
     }
   } catch (err) {
@@ -201,11 +238,19 @@ export async function submitAuditReport(formData) {
  * Dispatch municipal action for an incident
  */
 export async function dispatchIncidentAction(ticketId, actionPayload) {
+  const formattedPayload = {
+    action_type: actionPayload.type || actionPayload.action_type || 'DISPATCH_SMOG_GUN',
+    assigned_unit: actionPayload.assigned_unit || `UNIT-${(actionPayload.type || 'SMOG_GUN').toUpperCase()}-01`,
+    operator_notes: actionPayload.operator_notes || `Emergency air quality mitigation dispatched for ticket ${ticketId}`,
+    officer_badge_id: actionPayload.officer_badge_id || 'ULB-ENF-4412',
+    ...actionPayload,
+  };
+
   try {
     const res = await fetch(`${API_BASE}/incidents/${ticketId}/action`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(actionPayload),
+      body: JSON.stringify(formattedPayload),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
@@ -219,7 +264,7 @@ export async function dispatchIncidentAction(ticketId, actionPayload) {
       status: 'DISPATCHED',
       dispatch_time: new Date().toISOString(),
       eta_minutes: 12,
-      asset_callsign: 'MUNICIPAL-SMOG-CANNON-04',
+      asset_callsign: formattedPayload.assigned_unit,
       message: 'Statutory enforcement unit mobilized. Target arrival in 12 minutes.',
     };
   }
