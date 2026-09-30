@@ -1,58 +1,237 @@
 """
-VayuGrid Incident Audit & Dispatch API Routes.
-Integrates Multimodal AI Forensics with the Atmospheric Physics Dispersion Engine
-to produce statutory municipal tickets and downwind exposure projections.
+VayuGrid Incident Audit, Lifecycle & ULB Dispatch API Routes.
+Orchestrates:
+1. Multimodal AI Forensics (Gemini Flash) with Anti-Spoofing & Opacity Detection.
+2. Atmospheric Micrometeorology & Pasquill-Gifford Stability Ingestion.
+3. Vectorized Gaussian Plume & Transient Lagrangian Puff Dispersion Physics.
+4. Multilingual Public Health Emergency Advisories across 6 Indian Languages.
+5. Statutory Incident Lifecycle Management, Dispatch Queue, and Municipal Work Orders.
 """
 
-import uuid
-from datetime import datetime, timezone
+import logging
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query, Body, status
 
 from app.models.dispersion import (
     EmissionSourceType,
     SimulationParameters,
 )
+from app.models.incident import (
+    IncidentStatusEnum,
+    CoordinatesModel,
+    IncidentVerificationDetails,
+    MeteorologySummary,
+    MunicipalActionRequest,
+    MunicipalActionResponse,
+    ResolveIncidentRequest,
+    ResolveIncidentResponse,
+    Base64AuditRequest,
+    IncidentRecord,
+)
+from app.services.ticket_service import ticket_service
 from app.services.dispersion_engine import DispersionEngine
 from app.services.weather_service import WeatherService
+from app.services.gemini_forensic import GeminiForensicService
+from app.services.vernacular_service import VernacularService
 from app.data.sensitive_infrastructure import get_candidate_receptors
+
+logger = logging.getLogger("vayugrid.incidents")
 
 router = APIRouter(prefix="/incidents", tags=["Incident Audit & ULB Dispatch"])
 
 dispersion_engine = DispersionEngine()
 weather_service = WeatherService()
+gemini_forensic = GeminiForensicService()
+vernacular_service = VernacularService()
 
-# In-memory storage for active incidents and dispatched work orders
-ACTIVE_INCIDENTS_STORE: Dict[str, Dict[str, Any]] = {}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/jpg"}
+MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10MB
+
+# Map forensic classification strings to dispersion emission physics
+FORENSIC_TO_DISPERSION_MAP: Dict[str, EmissionSourceType] = {
+    "OPEN_MUNICIPAL_WASTE_BURNING": EmissionSourceType.OPEN_MUNICIPAL_WASTE_BURNING,
+    "CONSTRUCTION_DEMOLITION_DUST": EmissionSourceType.CONSTRUCTION_DUST_SUSPENSION,
+    "INDUSTRIAL_STACK_EMISSION": EmissionSourceType.INDUSTRIAL_STACK_EMISSION,
+    "BIOMASS_STUBBLE_BURNING": EmissionSourceType.AGRICULTURAL_BIOMASS_BURNING,
+    "HIGH_DENSITY_VEHICULAR_IDLING": EmissionSourceType.TRAFFIC_CORRIDOR_EXHAUST,
+    "UNPAVED_ROAD_SUSPENSION": EmissionSourceType.ROAD_RESUSPENSION,
+}
 
 
-class MunicipalActionRequest(BaseModel):
-    """Payload for deploying municipal mitigation assets."""
+async def _execute_audit_pipeline(
+    image_bytes: Optional[bytes],
+    mime_type: str,
+    latitude: float,
+    longitude: float,
+    city_id: Optional[str],
+    reported_by: str,
+    compass_heading_deg: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Internal core orchestrator executing the full audit pipeline."""
+    city_slug = city_id.lower().replace("-", "_") if city_id else None
 
-    action_type: str = Field(..., description="Action type: DISPATCH_SMOG_GUN, WATER_SPRINKLER, PATROL_INSPECTION")
-    assigned_unit: str = Field(..., description="Identifier of the field asset or vehicle")
-    operator_notes: str = Field(..., description="Field operational instructions")
-    officer_badge_id: str = Field(..., description="Statutory ULB officer identification")
+    # 1. Forensic Audit (Live Gemini Flash or Statutory Heuristic Fallback)
+    if image_bytes:
+        audit_result = gemini_forensic.audit_image(
+            image_data=image_bytes,
+            mime_type=mime_type,
+            latitude=latitude,
+            longitude=longitude,
+            city_hint=city_slug,
+            reported_by=reported_by,
+        )
+    else:
+        # Headless audit: generate resilient statutory fallback
+        audit_result = gemini_forensic._generate_resilient_fallback(
+            pil_image=None,
+            city_hint=city_slug,
+            latitude=latitude,
+            longitude=longitude,
+        )
 
+    # 2. Check Anti-Spoofing / Hazard Validity
+    source_class_str = (
+        audit_result.source_classification.value
+        if hasattr(audit_result.source_classification, "value")
+        else str(audit_result.source_classification or "OPEN_MUNICIPAL_WASTE_BURNING")
+    )
+    dispersion_source_type = FORENSIC_TO_DISPERSION_MAP.get(
+        source_class_str, EmissionSourceType.OPEN_MUNICIPAL_WASTE_BURNING
+    )
 
-class MunicipalActionResponse(BaseModel):
-    """Response confirmation after asset dispatch."""
+    ticket_id = ticket_service.generate_ticket_id(
+        city_id=city_slug,
+        latitude=latitude,
+        longitude=longitude,
+    )
 
-    ticket_id: str
-    status: str
-    action_timestamp: str
-    eta_minutes: int
-    confirmation_code: str
+    # If image is rejected by anti-spoofing
+    if not audit_result.is_valid_environmental_hazard:
+        rejected_record = IncidentRecord(
+            ticket_id=ticket_id,
+            status=IncidentStatusEnum.REJECTED_SPOOF,
+            reported_by=reported_by,
+            city_id=city_slug,
+            coordinates=CoordinatesModel(
+                latitude=latitude,
+                longitude=longitude,
+                address_hint=f"Coordinates ({latitude:.4f}, {longitude:.4f})",
+            ),
+            verification=IncidentVerificationDetails(
+                is_valid_environmental_hazard=False,
+                rejection_reason=audit_result.rejection_reason or "Image failed anti-spoofing verification.",
+                source_classification=source_class_str,
+                severity_score=audit_result.severity_score,
+                confidence_score=audit_result.confidence_score,
+                optical_smoke_opacity=audit_result.optical_smoke_opacity,
+                estimated_plume_spread_radius_meters=audit_result.estimated_plume_spread_radius_meters,
+                detected_visual_markers=audit_result.detected_visual_markers,
+            ),
+        )
+        ticket_service.create_incident(rejected_record)
+        return rejected_record.model_dump()
+
+    # 3. Ingest Live Meteorology from Open-Meteo with regional fallback
+    weather = await weather_service.get_live_weather(
+        lat=latitude,
+        lon=longitude,
+        city_id=city_slug,
+    )
+
+    # 4. Sensitive Infrastructure Candidate Receptors
+    candidates = get_candidate_receptors(
+        origin_lat=latitude,
+        origin_lon=longitude,
+        max_search_radius_km=15.0,
+        city_id=city_slug,
+    )
+
+    # 5. Run Vectorized Gaussian Plume + Transient Puff Physics Engine
+    severity = max(0.1, min(1.0, audit_result.severity_score))
+    opacity = max(0.0, min(1.0, audit_result.optical_smoke_opacity or 0.85))
+    radius_m = float(max(10, audit_result.estimated_plume_spread_radius_meters or 25))
+
+    sim_params = SimulationParameters(
+        origin_lat=latitude,
+        origin_lon=longitude,
+        source_type=dispersion_source_type,
+        severity_score=severity,
+        smoke_opacity=opacity,
+        origin_radius_meters=radius_m,
+        simulation_duration_minutes=60,
+    )
+
+    sim_result = dispersion_engine.run_simulation(
+        params=sim_params,
+        weather=weather,
+        candidate_receptors=candidates,
+    )
+
+    # 6. Synthesize Vernacular Emergency Public Advisories across 6 Indian Languages
+    city_display_name = (city_slug or "Delhi-NCR").replace("_", " ").title()
+    advisories = vernacular_service.generate_advisories(
+        source_classification=source_class_str,
+        severity_score=severity,
+        city_name=city_display_name,
+        detected_markers=audit_result.detected_visual_markers,
+    )
+
+    # 7. Assemble Statutory Incident Record
+    recommended_action_dict = (
+        audit_result.recommended_ulb_action.model_dump()
+        if hasattr(audit_result.recommended_ulb_action, "model_dump")
+        else audit_result.recommended_ulb_action
+    )
+
+    record = IncidentRecord(
+        ticket_id=ticket_id,
+        status=IncidentStatusEnum.VERIFIED_HAZARD,
+        reported_by=reported_by,
+        city_id=city_slug,
+        coordinates=CoordinatesModel(
+            latitude=latitude,
+            longitude=longitude,
+            address_hint=f"Coordinates ({latitude:.4f}, {longitude:.4f})",
+        ),
+        verification=IncidentVerificationDetails(
+            is_valid_environmental_hazard=True,
+            source_classification=source_class_str,
+            severity_score=severity,
+            confidence_score=audit_result.confidence_score,
+            optical_smoke_opacity=opacity,
+            estimated_plume_spread_radius_meters=int(radius_m),
+            detected_visual_markers=audit_result.detected_visual_markers,
+            recommended_ulb_action=recommended_action_dict,
+            summary_assessment=audit_result.summary_assessment,
+        ),
+        meteorology=MeteorologySummary(
+            wind_speed_kmh=weather.wind_speed_kmh,
+            wind_speed_ms=weather.wind_speed_ms,
+            wind_direction_deg=weather.wind_direction_deg,
+            downwind_bearing_deg=weather.downwind_bearing_deg,
+            temperature_c=weather.temperature_c,
+            humidity_pct=weather.humidity_pct,
+            planetary_boundary_layer_height_m=weather.planetary_boundary_layer_height_m,
+            stability_class=weather.stability_class.value,
+        ),
+        downwind_exposure_cone=sim_result.downwind_exposure_cone.model_dump(),
+        physics_simulation=sim_result.model_dump(),
+        impacted_infrastructure=[r.model_dump() for r in sim_result.impacted_infrastructure],
+        vernacular_advisories=advisories.model_dump(),
+    )
+
+    # Persist in TicketService
+    ticket_service.create_incident(record)
+    return record.model_dump()
 
 
 @router.post(
     "/audit",
-    summary="Audit environmental hazard image and compute physical dispersion",
+    summary="Audit environmental hazard image (multipart/form-data) and compute physical dispersion",
     response_model=Dict[str, Any],
 )
-async def audit_incident(
-    image: Optional[UploadFile] = File(None, description="Hazard photograph (JPEG/PNG/WebP)"),
+async def audit_incident_multipart(
+    image: Optional[UploadFile] = File(None, description="Hazard photograph (JPEG/PNG/WebP, max 10MB)"),
     latitude: float = Form(..., ge=-90.0, le=90.0),
     longitude: float = Form(..., ge=-180.0, le=180.0),
     city_id: Optional[str] = Form(None),
@@ -60,161 +239,152 @@ async def audit_incident(
     compass_heading_deg: Optional[float] = Form(None),
 ):
     """
-    Core end-to-end audit endpoint:
-    1. Ingests uploaded image metadata.
-    2. Fetches real-time wind and PBL height via Open-Meteo.
-    3. Runs the robust Atmospheric Physics & Plume Dispersion Simulation.
-    4. Intersects downwind exposure isopleths with schools, hospitals, and informal wards.
-    5. Returns municipal dispatch ticket with backwards-compatible downwind cone
-       AND upgraded high-fidelity physical isopleths.
+    Core multipart audit endpoint:
+    1. Validates file MIME type and max 10MB bounds.
+    2. Runs Gemini Flash Multimodal Forensic Audit with Anti-Spoofing.
+    3. Fetches live boundary layer height and wind vectors from Open-Meteo.
+    4. Computes Briggs plume rise, Irwin shear, and Pasquill-Gifford dispersion.
+    5. Calculates sensitive receptor intersections (schools, hospitals, informal settlements).
+    6. Synthesizes multilingual public alerts in 6 languages.
+    7. Creates statutory ticket and registers in ULB dispatch queue.
     """
+    image_bytes = None
+    mime_type = "image/jpeg"
+
+    if image is not None and image.filename:
+        # Validate content type
+        content_type = (image.content_type or "").lower()
+        if content_type and content_type not in ALLOWED_MIME_TYPES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported file format '{content_type}'. Allowed: JPEG, PNG, WebP.",
+            )
+        mime_type = content_type or "image/jpeg"
+
+        # Read and check size
+        image_bytes = await image.read()
+        if len(image_bytes) > MAX_FILE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File size exceeds the statutory 10MB limit.",
+            )
+
     try:
-        # Default forensic baseline (Member 3 will enhance with live Gemini prompt)
-        source_class = EmissionSourceType.OPEN_MUNICIPAL_WASTE_BURNING
-        severity = 0.85
-        opacity = 0.90
-        radius_m = 25.0
-
-        # Adjust classification hints by city archetype if available
-        city_slug = city_id.lower() if city_id else None
-        if city_slug == "bengaluru":
-            source_class = EmissionSourceType.CONSTRUCTION_DUST_SUSPENSION
-            severity = 0.75
-            radius_m = 35.0
-        elif city_slug == "kanpur":
-            source_class = EmissionSourceType.INDUSTRIAL_STACK_EMISSION
-            severity = 0.90
-            radius_m = 18.0
-        elif city_slug == "punjab":
-            source_class = EmissionSourceType.AGRICULTURAL_BIOMASS_BURNING
-            severity = 0.88
-            radius_m = 50.0
-
-        # 1. Fetch live meteorological vectors
-        weather = await weather_service.get_live_weather(
-            lat=latitude,
-            lon=longitude,
-            city_id=city_slug,
+        return await _execute_audit_pipeline(
+            image_bytes=image_bytes,
+            mime_type=mime_type,
+            latitude=latitude,
+            longitude=longitude,
+            city_id=city_id,
+            reported_by=reported_by or "FIELD_TELEMETRY",
+            compass_heading_deg=compass_heading_deg,
         )
-
-        # 2. Get sensitive receptors
-        candidates = get_candidate_receptors(
-            origin_lat=latitude,
-            origin_lon=longitude,
-            max_search_radius_km=15.0,
-            city_id=city_slug,
-        )
-
-        # 3. Run high-precision atmospheric dispersion simulation
-        sim_params = SimulationParameters(
-            origin_lat=latitude,
-            origin_lon=longitude,
-            source_type=source_class,
-            severity_score=severity,
-            smoke_opacity=opacity,
-            origin_radius_meters=radius_m,
-            simulation_duration_minutes=60,
-        )
-
-        sim_result = dispersion_engine.run_simulation(
-            params=sim_params,
-            weather=weather,
-            candidate_receptors=candidates,
-        )
-
-        ticket_suffix = uuid.uuid4().hex[:4].upper()
-        city_tag = (city_slug or "IND")[:3].upper()
-        lat_tag = f"{int(abs(latitude) * 100):04d}"
-        lon_tag = f"{int(abs(longitude) * 100):04d}"
-        ticket_id = f"VAYU-{city_tag}-{lat_tag}-{lon_tag}-{ticket_suffix}"
-
-        now_iso = datetime.now(timezone.utc).isoformat()
-        q_rate = sim_result.source_parameters.get("emission_rate_q_g_s", 0.0)
-
-        # Build comprehensive incident record
-        record: Dict[str, Any] = {
-            "ticket_id": ticket_id,
-            "status": "VERIFIED_HAZARD",
-            "created_at": now_iso,
-            "coordinates": {
-                "latitude": latitude,
-                "longitude": longitude,
-                "address_hint": f"Co-ordinates ({latitude:.4f}, {longitude:.4f})",
-            },
-            "verification": {
-                "is_valid_environmental_hazard": True,
-                "source_classification": source_class.value,
-                "severity_score": severity,
-                "confidence_score": 0.94,
-                "estimated_plume_spread_radius_meters": int(sim_result.downwind_reach_km * 1000.0),
-                "detected_visual_markers": [
-                    f"Dense toxic particulate plume ({source_class.value.replace('_', ' ').title()})",
-                    f"Calculated effective emission rate: {q_rate} g/s",
-                    f"Briggs effective plume rise: {sim_result.plume_dynamics.plume_rise_delta_h_m}m",
-                ],
-                "recommended_ulb_action": {
-                    "intervention_type": "Deploy Water Sprinkler Tanker and Smog Mist Canon",
-                    "target_department": "Municipal Solid Waste Enforcement / Urban Local Body",
-                    "priority_level": "CRITICAL" if severity > 0.8 else "HIGH",
-                },
-            },
-            "meteorology": {
-                "wind_speed_kmh": weather.wind_speed_kmh,
-                "wind_direction_deg": weather.wind_direction_deg,
-                "temperature_c": weather.temperature_c,
-                "humidity_pct": weather.humidity_pct,
-                "planetary_boundary_layer_height_m": weather.planetary_boundary_layer_height_m,
-                "stability_class": weather.stability_class.value,
-            },
-            "downwind_exposure_cone": sim_result.downwind_exposure_cone.model_dump(),
-            "impacted_infrastructure": [r.model_dump() for r in sim_result.impacted_infrastructure],
-            # Enhanced high-fidelity physical simulation output
-            "physics_simulation": sim_result.model_dump(),
-            "vernacular_advisories": {
-                "en": (
-                    "Dense toxic smoke detected nearby. Vulnerable groups, elderly, and schools "
-                    "downwind should close windows and avoid outdoor exposure for the next 2 hours."
-                ),
-                "hi": (
-                    "आस-पास घना जहरीला धुआं देखा गया है। हवा के बहाव वाले क्षेत्र के स्कूलों और "
-                    "बुजुर्गों से अनुरोध है कि वे खिड़कियां बंद रखें और अगले 2 घंटे बाहर न निकलें।"
-                ),
-                "te": (
-                    "సమీపంలో దట్టమైన విషపూరిత పొగ కనిపించింది. గాలి ప్రవాహ దిశలోని పాఠశాలలు మరియు "
-                    "వృద్ధులు కిటికీలు మూసివేసి, వచ్చే 2 గంటల పాటు బయటకు రాకుండా ఉండాలి."
-                ),
-                "kn": (
-                    "ಹತ್ತಿರದಲ್ಲಿ ದಟ್ಟವಾದ ವಿಷಕಾರಿ ಹೊಗೆ ಪತ್ತೆಯಾಗಿದೆ. ಗಾಳಿಯ ದಿಕ್ಕಿನಲ್ಲಿರುವ ಶಾಲೆಗಳು ಮತ್ತು "
-                    "ಹಿರಿಯ ನಾಗರಿಕರು ಕಿಟಕಿಗಳನ್ನು ಮುಚ್ಚಿ ಮುಂದಿನ 2 ಗಂಟೆಗಳ ಕಾಲ ಹೊರಗೆ ಹೋಗುವುದನ್ನು ತಪ್ಪಿಸಿ."
-                ),
-                "ta": (
-                    "அருகில் கடுமையான நச்சுப் புகை கண்டறியப்பட்டுள்ளது. காற்றின் திசையிலுள்ள பள்ளிகள் மற்றும் "
-                    "முதியவர்கள் ஜன்னல்களை மூடி, அடுத்த 2 மணிநேரத்திற்கு வெளியில் செல்வதைத் தவிர்க்கவும்."
-                ),
-                "ml": (
-                    "സമീപത്ത് കനത്ത വിഷപ്പുക കണ്ടെത്തി. കാറ്റിന്റെ ദിശയിലുള്ള സ്കൂളുകളും "
-                    "മുതിർന്നവരും ജനലുകൾ അടയ്ക്കുകയും അടുത്ത 2 മണിക്കൂർ പുറത്തിറങ്ങുന്നത് ഒഴിവാക്കുകയും വേണം."
-                ),
-            },
-        }
-
-        # Store in cache
-        ACTIVE_INCIDENTS_STORE[ticket_id] = record
-        return record
-
+    except HTTPException:
+        raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Incident audit failure: {str(exc)}")
+        logger.error(f"Incident audit pipeline failed: {str(exc)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Incident audit failure: {str(exc)}",
+        )
 
 
-@router.get("/active", response_model=List[Dict[str, Any]], summary="Retrieve active hazard incidents")
+@router.post(
+    "/audit/json",
+    summary="Audit environmental hazard via Base64 JSON payload",
+    response_model=Dict[str, Any],
+)
+async def audit_incident_json(payload: Base64AuditRequest = Body(...)):
+    """
+    JSON ingestion endpoint accepting Base64-encoded imagery or headless sensor coordinates.
+    """
+    image_bytes = None
+    mime_type = "image/jpeg"
+
+    if payload.image_base64:
+        import base64
+        raw_b64 = payload.image_base64
+        if "," in raw_b64:
+            header, raw_b64 = raw_b64.split(",", 1)
+            if "png" in header:
+                mime_type = "image/png"
+            elif "webp" in header:
+                mime_type = "image/webp"
+
+        try:
+            image_bytes = base64.b64decode(raw_b64)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid Base64 image payload.",
+            )
+
+        if len(image_bytes) > MAX_FILE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Decoded image payload exceeds 10MB limit.",
+            )
+
+    try:
+        return await _execute_audit_pipeline(
+            image_bytes=image_bytes,
+            mime_type=mime_type,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            city_id=payload.city_id,
+            reported_by=payload.reported_by or "FIELD_TELEMETRY",
+            compass_heading_deg=payload.compass_heading_deg,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"JSON incident audit failure: {str(exc)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"JSON incident audit failure: {str(exc)}",
+        )
+
+
+@router.get(
+    "/active",
+    response_model=List[Dict[str, Any]],
+    summary="Retrieve active hazard incidents with city, status, and priority filters",
+)
 async def get_active_incidents(
-    city_id: Optional[str] = Query(None, description="Optional city filter"),
+    city_id: Optional[str] = Query(None, description="Optional city filter (e.g. 'delhi_ncr')"),
+    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status (e.g. 'VERIFIED_HAZARD', 'DISPATCHED')"),
+    priority: Optional[str] = Query(None, description="Filter by priority ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
 ):
-    """Returns active environmental hazard tickets."""
-    if not ACTIVE_INCIDENTS_STORE:
-        # Pre-seed with one demonstrator record in Delhi
-        return []
-    return list(ACTIVE_INCIDENTS_STORE.values())
+    """
+    Returns active environmental hazard tickets.
+    Includes pre-seeded flagship regional archetypes across Delhi-NCR, Bengaluru, Kanpur, Mumbai, and Punjab.
+    """
+    incidents = ticket_service.list_incidents(
+        city_id=city_id,
+        status=status_filter,
+        priority=priority,
+        limit=limit,
+        offset=offset,
+    )
+    return [inc.model_dump() for inc in incidents]
+
+
+@router.get(
+    "/{ticket_id}",
+    response_model=Dict[str, Any],
+    summary="Retrieve single incident ticket by statutory ID",
+)
+async def get_incident_by_id(ticket_id: str):
+    """Fetches full incident dossier including dispersion contours and dispatch work orders."""
+    incident = ticket_service.get_incident(ticket_id)
+    if not incident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket '{ticket_id}' not found in registry.",
+        )
+    return incident.model_dump()
 
 
 @router.post(
@@ -222,19 +392,44 @@ async def get_active_incidents(
     response_model=MunicipalActionResponse,
     summary="Dispatch municipal mitigation asset for verified ticket",
 )
-async def dispatch_action(ticket_id: str, action: MunicipalActionRequest):
-    """Dispatches ULB assets (water tanker, smog gun, enforcement patrol)."""
-    now_iso = datetime.now(timezone.utc).isoformat()
-    disp_code = f"DISP-{uuid.uuid4().hex[:6].upper()}"
+async def dispatch_action(ticket_id: str, action: MunicipalActionRequest = Body(...)):
+    """
+    Dispatches ULB assets (water tanker, smog mist gun, enforcement patrol).
+    Advances ticket lifecycle state to DISPATCHED.
+    """
+    try:
+        return ticket_service.dispatch_action(ticket_id=ticket_id, action=action)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket '{ticket_id}' not found.",
+        )
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve),
+        )
 
-    if ticket_id in ACTIVE_INCIDENTS_STORE:
-        ACTIVE_INCIDENTS_STORE[ticket_id]["status"] = "DISPATCHED"
-        ACTIVE_INCIDENTS_STORE[ticket_id]["dispatch_details"] = action.model_dump()
 
-    return MunicipalActionResponse(
-        ticket_id=ticket_id,
-        status="DISPATCHED",
-        action_timestamp=now_iso,
-        eta_minutes=12,
-        confirmation_code=disp_code,
-    )
+@router.post(
+    "/{ticket_id}/resolve",
+    response_model=ResolveIncidentResponse,
+    summary="Mark incident as resolved upon mitigation completion",
+)
+async def resolve_incident(ticket_id: str, resolution: ResolveIncidentRequest = Body(...)):
+    """
+    Statutory incident closure by ULB officers upon site remediation.
+    Advances ticket lifecycle state to RESOLVED.
+    """
+    try:
+        return ticket_service.resolve_incident(ticket_id=ticket_id, resolution=resolution)
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket '{ticket_id}' not found.",
+        )
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve),
+        )

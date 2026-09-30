@@ -38,7 +38,7 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ### 3. Run Automated Tests
 ```bash
-# Run all 38 tests
+# Run all 62 tests
 uv run pytest -v
 
 # Run weak-PC latency benchmark
@@ -54,14 +54,19 @@ uv run flake8 app tests --max-line-length=120 --extend-ignore=E203,W503
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/health` | Service health status |
+| `GET` | `/health` | Service health status with 7 subsystem checks |
 | `GET` | `/api/v1/telemetry/cities` | Regional city archetypes catalog |
 | `GET` | `/api/v1/telemetry/weather` | Live micro-meteorology with regional fallback |
+| `GET` | `/api/v1/telemetry/aqi` | Tier-B CPCB & OpenAQ ambient monitoring station feed |
 | `POST` | `/api/v1/dispersion/simulate` | Standalone atmospheric physics dispersion simulation |
 | `GET` | `/api/v1/dispersion/receptors` | Spatial lookup of geo-indexed sensitive infrastructure |
-| `POST` | `/api/v1/incidents/audit` | Incident audit with dual-cone/isopleth output |
-| `GET` | `/api/v1/incidents/active` | Query active municipal incident tickets |
+| `POST` | `/api/v1/incidents/audit` | Multipart incident audit with AI forensics & dispersion |
+| `POST` | `/api/v1/incidents/audit/json` | Base64 JSON incident audit for edge PWA devices |
+| `GET` | `/api/v1/incidents/active` | Query active municipal incident tickets with filters |
+| `GET` | `/api/v1/incidents/{ticket_id}` | Retrieve statutory incident dossier by ticket ID |
 | `POST` | `/api/v1/incidents/{ticket_id}/action` | Dispatch mitigation assets (smog guns, tankers) |
+| `POST` | `/api/v1/incidents/{ticket_id}/resolve` | Close incident upon mitigation completion |
+| `POST` | `/api/v1/vernacular/synthesize` | Multi-language translation & TTS speech synthesis |
 
 ---
 
@@ -70,10 +75,12 @@ uv run flake8 app tests --max-line-length=120 --extend-ignore=E203,W503
 ```
 backend/
 ├── app/
-│   ├── api/             # REST endpoints (telemetry, dispersion, incidents)
-│   ├── data/            # Sensitive infrastructure geo-database
-│   ├── models/          # Pydantic schemas (weather, dispersion, receptors)
-│   ├── services/        # Physics engine & meteorological ingestion
-│   └── main.py          # FastAPI application factory
-└── tests/               # 38 unit, integration, and performance tests
+│   ├── api/             # REST endpoints (telemetry, dispersion, incidents, vernacular)
+│   ├── core/            # Configuration & forensic system prompts
+│   ├── data/            # Sensitive infrastructure & sample audit payloads
+│   ├── models/          # Pydantic v2 schemas (incident, dispersion, weather, forensic)
+│   ├── services/        # Physics engine, weather, forensics, speech, tickets, AQI
+│   └── main.py          # FastAPI application factory with tracing & timing middleware
+└── tests/               # 62 unit, integration, lifecycle, and performance tests
 ```
+

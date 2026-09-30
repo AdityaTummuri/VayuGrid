@@ -76,3 +76,75 @@ def test_incident_audit_endpoint():
     assert "physics_simulation" in ticket
     assert "vernacular_advisories" in ticket
     assert "impacted_infrastructure" in ticket
+
+
+def test_telemetry_aqi():
+    res = client.get("/api/v1/telemetry/aqi?city_id=delhi_ncr")
+    assert res.status_code == 200
+    stations = res.json()
+    assert len(stations) >= 1
+    assert "aqi_value" in stations[0]
+    assert "aqi_category" in stations[0]
+
+
+def test_active_incidents_list():
+    res = client.get("/api/v1/incidents/active?city_id=delhi_ncr")
+    assert res.status_code == 200
+    incidents = res.json()
+    assert len(incidents) >= 1
+    assert incidents[0]["city_id"] == "delhi_ncr"
+
+
+def test_get_incident_by_id():
+    res = client.get("/api/v1/incidents/VAYU-DEL-2861-7720-A4F9")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["ticket_id"] == "VAYU-DEL-2861-7720-A4F9"
+    assert data["status"] == "VERIFIED_HAZARD"
+
+
+def test_dispatch_and_resolve_flow():
+    ticket_id = "VAYU-DEL-2861-7720-A4F9"
+    action_payload = {
+        "action_type": "DISPATCH_SMOG_GUN",
+        "assigned_unit": "EAST_DELHI_SMOG_GUN_04",
+        "operator_notes": "Mist cannon deployed to perimeter.",
+        "officer_badge_id": "MCD-ENF-8821",
+    }
+    res_disp = client.post(f"/api/v1/incidents/{ticket_id}/action", json=action_payload)
+    assert res_disp.status_code == 200
+    disp_data = res_disp.json()
+    assert disp_data["status"] == "DISPATCHED"
+
+    resolve_payload = {
+        "officer_badge_id": "MCD-ENF-8821",
+        "resolution_notes": "Plume fully suppressed.",
+        "mitigation_summary": "Applied 15,000L fine mist spray.",
+    }
+    res_resolve = client.post(f"/api/v1/incidents/{ticket_id}/resolve", json=resolve_payload)
+    assert res_resolve.status_code == 200
+    resolve_data = res_resolve.json()
+    assert resolve_data["status"] == "RESOLVED"
+
+
+def test_base64_json_audit_endpoint():
+    payload = {
+        "latitude": 19.0760,
+        "longitude": 72.8777,
+        "city_id": "mumbai",
+        "reported_by": "MUMBAI_EDGE_PWA",
+    }
+    res = client.post("/api/v1/incidents/audit/json", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "VERIFIED_HAZARD"
+    assert "ticket_id" in data
+    assert "vernacular_advisories" in data
+
+
+def test_middleware_headers():
+    res = client.get("/health")
+    assert res.status_code == 200
+    assert "x-process-time" in res.headers
+    assert "x-request-id" in res.headers
+

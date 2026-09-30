@@ -8,6 +8,7 @@ from fastapi import APIRouter, Query, HTTPException
 
 from app.models.weather import WeatherTelemetry, CityMetadata
 from app.services.weather_service import WeatherService
+from app.services.aqi_service import aqi_service, StationTelemetry
 
 router = APIRouter(prefix="/telemetry", tags=["Telemetry & Micrometeorology"])
 weather_service = WeatherService()
@@ -58,3 +59,24 @@ async def get_supported_cities():
     recommended zoom levels, ULB authority names, and typical seasonal mixing heights.
     """
     return weather_service.get_supported_cities()
+
+
+@router.get(
+    "/aqi",
+    response_model=List[StationTelemetry],
+    summary="Retrieve ground-truth CPCB / OpenAQ ambient AQI station telemetry",
+)
+async def get_ambient_aqi(
+    city_id: Optional[str] = Query(
+        None, description="Optional city identifier (e.g., 'delhi_ncr', 'bengaluru', 'kanpur')"
+    ),
+):
+    """
+    Returns live Tier-B station observations (PM2.5, PM10, NO2, NAQI Category)
+    for official monitoring stations across Indian cities.
+    """
+    try:
+        return await aqi_service.get_city_stations(city_id=city_id)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve AQI telemetry: {str(exc)}")
+

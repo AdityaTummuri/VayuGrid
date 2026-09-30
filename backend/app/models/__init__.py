@@ -19,6 +19,26 @@ from app.models.dispersion import (
     SimulationParameters,
     DispersionSimulationResult,
 )
+from app.models.forensic import (
+    PollutionSourceEnum,
+    PriorityLevelEnum,
+    RecommendedULBAction,
+    ForensicAuditResult,
+    VernacularAdvisories,
+)
+from app.models.incident import (
+    IncidentStatusEnum,
+    VALID_STATE_TRANSITIONS,
+    CoordinatesModel,
+    IncidentVerificationDetails,
+    MeteorologySummary,
+    MunicipalActionRequest,
+    MunicipalActionResponse,
+    ResolveIncidentRequest,
+    ResolveIncidentResponse,
+    Base64AuditRequest,
+    IncidentRecord,
+)
 
 __all__ = [
     "StabilityClass",
@@ -36,4 +56,21 @@ __all__ = [
     "DownwindExposureCone",
     "SimulationParameters",
     "DispersionSimulationResult",
+    "PollutionSourceEnum",
+    "PriorityLevelEnum",
+    "RecommendedULBAction",
+    "ForensicAuditResult",
+    "VernacularAdvisories",
+    "IncidentStatusEnum",
+    "VALID_STATE_TRANSITIONS",
+    "CoordinatesModel",
+    "IncidentVerificationDetails",
+    "MeteorologySummary",
+    "MunicipalActionRequest",
+    "MunicipalActionResponse",
+    "ResolveIncidentRequest",
+    "ResolveIncidentResponse",
+    "Base64AuditRequest",
+    "IncidentRecord",
 ]
+
