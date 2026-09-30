@@ -23,6 +23,12 @@ app.add_middleware(
 )
 
 
+# Register Subsystem Routers
+from app.api.endpoints.vernacular import router as vernacular_router
+
+app.include_router(vernacular_router, prefix="/api/v1")
+
+
 @app.get("/")
 async def root():
     return {
