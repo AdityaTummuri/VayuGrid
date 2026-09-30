@@ -3,28 +3,30 @@ import { PageShell } from '../components/layout/PageShell';
 import { useApp } from '../context/AppContext';
 import { CommandMap } from '../components/map/CommandMap';
 import { IncidentQueue } from '../components/incident/IncidentQueue';
-import { Activity, ShieldAlert, Wind, Truck, AlertTriangle } from 'lucide-react';
+import { IncidentDetailDesk } from '../components/incident/IncidentDetailDesk';
+import { LiveTickerStrip } from '../components/charts/LiveTickerStrip';
+import { Wind, Truck, AlertTriangle, ShieldCheck, Activity } from 'lucide-react';
 
 export function ULBCommandDeskPage() {
   const { incidents, selectedCity, weather } = useApp();
 
-  const criticalCount = incidents.filter(i => i.severity_score >= 0.8).length;
-  const pendingCount = incidents.filter(i => i.status !== 'DISPATCHED').length;
+  const criticalCount = incidents.filter((i) => i.severity_score >= 0.8).length;
+  const pendingCount = incidents.filter((i) => i.status !== 'DISPATCHED').length;
 
   return (
-    <PageShell className="h-[calc(100vh-4rem)] overflow-hidden">
+    <PageShell className="h-[calc(100vh-4rem)] overflow-hidden flex flex-col justify-between">
       {/* Executive Command Metric Ribbon */}
-      <div className="bg-app-panel border-b border-border-subtle px-4 py-2 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+      <div className="bg-app-panel border-b border-border-subtle px-4 py-2 flex flex-wrap items-center justify-between gap-4 text-xs font-mono shrink-0">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <span className="text-slate-400 font-sans font-semibold uppercase text-2xs">MONITORED SECTOR:</span>
-            <span className="text-slate-100 font-bold">{selectedCity.name.toUpperCase()} COMMAND GRID</span>
+            <span className="text-white font-bold tracking-wide">{selectedCity.name.toUpperCase()} COMMAND GRID</span>
           </div>
 
           <div className="hidden sm:flex items-center gap-4 text-slate-400 border-l border-border-subtle pl-4">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
-              <span className="text-slate-200 font-bold font-tabular">{criticalCount}</span>
+              <span className="text-red-400 font-bold font-tabular">{criticalCount}</span>
               <span className="text-2xs text-slate-400">CRITICAL P0 PLUMES</span>
             </div>
 
@@ -51,18 +53,30 @@ export function ULBCommandDeskPage() {
         </div>
       </div>
 
-      {/* Main Dual-Pane Command Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
-        {/* Left Pane: GIS Command Map (7 cols = ~58%) */}
-        <div className="lg:col-span-7 h-full relative border-r border-border-subtle overflow-hidden">
+      {/* Main 3-Column Enterprise Mission Control Layout */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden min-h-0">
+        {/* Left Column: Live Incident Feed & Filter (col-span-3 = 25%) */}
+        <div className="lg:col-span-3 h-full overflow-hidden border-r border-border-subtle">
+          <IncidentQueue />
+        </div>
+
+        {/* Center Column: Real Geographic Leaflet GIS Map (col-span-6 = 50%) */}
+        <div className="lg:col-span-6 h-full relative overflow-hidden bg-app-bg">
           <CommandMap />
         </div>
 
-        {/* Right Pane: Incident Queue & Enforcement Desk (5 cols = ~42%) */}
-        <div className="lg:col-span-5 h-full overflow-hidden">
-          <IncidentQueue />
+        {/* Right Column: Forensic Details & Statutory Dispatch Desk (col-span-3 = 25%) */}
+        <div className="lg:col-span-3 h-full overflow-hidden">
+          <IncidentDetailDesk />
         </div>
+      </div>
+
+      {/* Bottom Mission-Critical System Ticker Strip */}
+      <div className="shrink-0">
+        <LiveTickerStrip />
       </div>
     </PageShell>
   );
 }
+
+export default ULBCommandDeskPage;

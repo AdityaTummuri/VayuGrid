@@ -67,3 +67,5 @@ export const CITIES = [
 ];
 
 export const DEFAULT_CITY = CITIES[0];
+
+export { getAqiTier } from './classifications';
