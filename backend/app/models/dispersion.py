@@ -200,7 +200,7 @@ class SimulationParameters(BaseModel):
         0.7, ge=0.0, le=1.0, description="Optical opacity index"
     )
     origin_radius_meters: float = Field(
-        15.0, ge=1.0, le=500.0, description="Estimated emission footprint radius"
+        15.0, ge=1.0, le=2500.0, description="Estimated emission footprint radius"
     )
     physical_stack_height_m: Optional[float] = Field(
         None, description="Release height in meters (defaults based on source)"

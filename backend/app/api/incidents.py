@@ -90,11 +90,21 @@ async def _execute_audit_pipeline(
         )
 
     # 2. Check Anti-Spoofing / Hazard Validity
-    source_class_str = (
-        audit_result.source_classification.value
-        if hasattr(audit_result.source_classification, "value")
-        else str(audit_result.source_classification or "OPEN_MUNICIPAL_WASTE_BURNING")
-    )
+    if audit_result.source_classification is not None:
+        source_class_str = (
+            audit_result.source_classification.value
+            if hasattr(audit_result.source_classification, "value")
+            else str(audit_result.source_classification)
+        )
+    elif not audit_result.is_valid_environmental_hazard:
+        rej = (audit_result.rejection_reason or "").lower()
+        if "clean" in rej or "no_hazard" in rej or "no air pollution" in rej:
+            source_class_str = "NO_HAZARD_DETECTED"
+        else:
+            source_class_str = "ANTI_SPOOF_REJECTED"
+    else:
+        source_class_str = "OPEN_MUNICIPAL_WASTE_BURNING"
+
     dispersion_source_type = FORENSIC_TO_DISPERSION_MAP.get(
         source_class_str, EmissionSourceType.OPEN_MUNICIPAL_WASTE_BURNING
     )
@@ -149,7 +159,7 @@ async def _execute_audit_pipeline(
     # 5. Run Vectorized Gaussian Plume + Transient Puff Physics Engine
     severity = max(0.1, min(1.0, audit_result.severity_score))
     opacity = max(0.0, min(1.0, audit_result.optical_smoke_opacity or 0.85))
-    radius_m = float(max(10, audit_result.estimated_plume_spread_radius_meters or 25))
+    radius_m = float(max(5.0, min(2000.0, float(audit_result.estimated_plume_spread_radius_meters or 25.0))))
 
     sim_params = SimulationParameters(
         origin_lat=latitude,

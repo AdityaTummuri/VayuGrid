@@ -79,14 +79,10 @@ export function CitizenReporterPage() {
         is_valid: isValid,
         rejection_reason: result.verification?.rejection_reason,
         timestamp: result.created_at || new Date().toISOString(),
-        classification: result.verification?.source_classification || 'OPEN_MUNICIPAL_WASTE_BURNING',
-        severity_score: result.verification?.severity_score ?? 0.88,
-        confidence: result.verification?.confidence_score ?? 0.94,
-        visual_markers: result.verification?.detected_visual_markers || [
-          'Dense toxic particulate plume (>85% Opacity)',
-          'Chlorinated polymer pyrolysis indicators detected',
-          'Direct boundary breach of sensitive infrastructure',
-        ],
+        classification: result.verification?.source_classification || (isValid ? 'OPEN_MUNICIPAL_WASTE_BURNING' : null),
+        severity_score: result.verification?.severity_score ?? (isValid ? 0.85 : 0.0),
+        confidence: result.verification?.confidence_score ?? 0.95,
+        visual_markers: result.verification?.detected_visual_markers || [],
         location: {
           address_hint: coords ? `Co-ordinates (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})` : 'Sector 16 Peripheral Corridor',
           lat,
@@ -100,6 +96,12 @@ export function CitizenReporterPage() {
           type: 'SUCCESS',
           title: 'Forensic Audit Verified',
           message: `Generated statutory ticket ${result.ticket_id}`,
+        });
+      } else if ((result.verification?.rejection_reason || '').includes('NO_HAZARD') || (result.verification?.rejection_reason || '').toLowerCase().includes('clean')) {
+        addToast({
+          type: 'INFO',
+          title: 'Clean Air Confirmed',
+          message: 'No visible air pollution hazard detected in this photo.',
         });
       } else {
         addToast({

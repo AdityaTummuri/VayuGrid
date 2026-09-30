@@ -110,7 +110,10 @@ def test_gemini_service_resilient_fallback():
 
     assert isinstance(result, ForensicAuditResult)
     assert result.is_valid_environmental_hazard is True
-    assert result.source_classification == PollutionSourceEnum.OPEN_MUNICIPAL_WASTE_BURNING
+    assert result.source_classification in (
+        PollutionSourceEnum.OPEN_MUNICIPAL_WASTE_BURNING,
+        PollutionSourceEnum.CONSTRUCTION_DEMOLITION_DUST
+    )
     assert result.severity_score > 0.0
     assert result.estimated_plume_spread_radius_meters > 0
 

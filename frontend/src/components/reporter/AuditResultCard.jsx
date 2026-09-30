@@ -9,6 +9,38 @@ export function AuditResultCard({ result }) {
   if (!result) return null;
 
   if (result.is_valid === false || result.status === 'REJECTED_SPOOF') {
+    const isCleanAir = (result.rejection_reason || '').includes('NO_HAZARD') || (result.rejection_reason || '').toLowerCase().includes('clean');
+
+    if (isCleanAir) {
+      return (
+        <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-6 space-y-4 shadow-sm animate-fade-in text-slate-800">
+          <div className="flex items-center justify-between gap-3 border-b border-emerald-200 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="h-6 px-2.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono text-2xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                <span>CLEAN AIR CONFIRMED — NO POLLUTION HAZARD</span>
+              </span>
+              <span className="font-mono text-xs font-bold text-slate-700 font-tabular">
+                {result.ticket_id}
+              </span>
+            </div>
+            <span className="text-3xs font-mono text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded border border-emerald-300 font-medium">
+              VERIFIED CLEAN
+            </span>
+          </div>
+          <div className="p-4 rounded-lg bg-white border border-emerald-200 shadow-2xs">
+            <p className="text-xs font-bold text-emerald-800 mb-1">Optical Inspection Assessment:</p>
+            <p className="text-xs text-slate-700 leading-relaxed font-mono">
+              {result.rejection_reason || 'Outdoor scene analyzed shows clean air with clear sky and no visible smoke or particulate plume.'}
+            </p>
+          </div>
+          <p className="text-2xs text-slate-500">
+            Gemini Vision verified that this location currently exhibits clear air quality without active combustion flares, toxic smoke, or unmitigated construction dust.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="bg-rose-50 border border-rose-300 rounded-xl p-6 space-y-4 shadow-sm animate-fade-in text-slate-800">
         <div className="flex items-center justify-between gap-3 border-b border-rose-200 pb-3">
@@ -28,7 +60,7 @@ export function AuditResultCard({ result }) {
         <div className="p-4 rounded-lg bg-white border border-rose-200 shadow-2xs">
           <p className="text-xs font-bold text-rose-800 mb-1">Reason for Rejection:</p>
           <p className="text-xs text-slate-700 leading-relaxed font-mono">
-            {result.rejection_reason || 'Image failed anti-spoofing verification or depicts non-environmental scene.'}
+            {result.rejection_reason || 'Image failed anti-spoofing verification or depicts an indoor scene.'}
           </p>
         </div>
         <p className="text-2xs text-slate-500">
