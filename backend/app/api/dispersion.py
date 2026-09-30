@@ -10,7 +10,6 @@ from fastapi import APIRouter, HTTPException, Query, Body
 from app.models.dispersion import (
     SimulationParameters,
     DispersionSimulationResult,
-    ImpactedReceptor,
 )
 from app.services.dispersion_engine import DispersionEngine
 from app.services.weather_service import WeatherService
@@ -30,7 +29,7 @@ weather_service = WeatherService()
 async def simulate_dispersion(
     params: SimulationParameters = Body(
         ...,
-        description="Source parameters (coordinates, source type, severity, opacity, duration)"
+        description="Source parameters (coordinates, source type, severity, opacity, duration)",
     ),
     city_id: Optional[str] = Query(None, description="Optional city identifier for localized weather/receptors"),
 ):
@@ -71,7 +70,7 @@ async def simulate_dispersion(
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Atmospheric dispersion simulation error: {str(exc)}"
+            detail=f"Atmospheric dispersion simulation error: {str(exc)}",
         )
 
 

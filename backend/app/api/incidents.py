@@ -7,13 +7,12 @@ to produce statutory municipal tickets and downwind exposure projections.
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query, Body
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.models.dispersion import (
     EmissionSourceType,
     SimulationParameters,
-    DispersionSimulationResult,
 )
 from app.services.dispersion_engine import DispersionEngine
 from app.services.weather_service import WeatherService
@@ -30,6 +29,7 @@ ACTIVE_INCIDENTS_STORE: Dict[str, Dict[str, Any]] = {}
 
 class MunicipalActionRequest(BaseModel):
     """Payload for deploying municipal mitigation assets."""
+
     action_type: str = Field(..., description="Action type: DISPATCH_SMOG_GUN, WATER_SPRINKLER, PATROL_INSPECTION")
     assigned_unit: str = Field(..., description="Identifier of the field asset or vehicle")
     operator_notes: str = Field(..., description="Field operational instructions")
@@ -38,6 +38,7 @@ class MunicipalActionRequest(BaseModel):
 
 class MunicipalActionResponse(BaseModel):
     """Response confirmation after asset dispatch."""
+
     ticket_id: str
     status: str
     action_timestamp: str
@@ -128,6 +129,7 @@ async def audit_incident(
         ticket_id = f"VAYU-{city_tag}-{lat_tag}-{lon_tag}-{ticket_suffix}"
 
         now_iso = datetime.now(timezone.utc).isoformat()
+        q_rate = sim_result.source_parameters.get("emission_rate_q_g_s", 0.0)
 
         # Build comprehensive incident record
         record: Dict[str, Any] = {
@@ -147,7 +149,7 @@ async def audit_incident(
                 "estimated_plume_spread_radius_meters": int(sim_result.downwind_reach_km * 1000.0),
                 "detected_visual_markers": [
                     f"Dense toxic particulate plume ({source_class.value.replace('_', ' ').title()})",
-                    f"Calculated effective emission rate: {sim_result.source_parameters.get('emission_rate_q_g_s', 0.0)} g/s",
+                    f"Calculated effective emission rate: {q_rate} g/s",
                     f"Briggs effective plume rise: {sim_result.plume_dynamics.plume_rise_delta_h_m}m",
                 ],
                 "recommended_ulb_action": {
@@ -169,12 +171,30 @@ async def audit_incident(
             # Enhanced high-fidelity physical simulation output
             "physics_simulation": sim_result.model_dump(),
             "vernacular_advisories": {
-                "en": "Dense toxic smoke detected nearby. Vulnerable groups, elderly, and schools downwind should close windows and avoid outdoor exposure for the next 2 hours.",
-                "hi": "आस-पास घना जहरीला धुआं देखा गया है। हवा के बहाव वाले क्षेत्र के स्कूलों और बुजुर्गों से अनुरोध है कि वे खिड़कियां बंद रखें और अगले 2 घंटे बाहर न निकलें।",
-                "te": "సమీపంలో దట్టమైన విషపూరిత పొగ కనిపించింది. గాలి ప్రవాహ దిశలోని పాఠశాలలు మరియు వృద్ధులు కిటికీలు మూసివేసి, వచ్చే 2 గంటల పాటు బయటకు రాకుండా ఉండాలి.",
-                "kn": "ಹತ್ತಿರದಲ್ಲಿ ದಟ್ಟವಾದ ವಿಷಕಾರಿ ಹೊಗೆ ಪತ್ತೆಯಾಗಿದೆ. ಗಾಳಿಯ ದಿಕ್ಕಿನಲ್ಲಿರುವ ಶಾಲೆಗಳು ಮತ್ತು ಹಿರಿಯ ನಾಗರಿಕರು ಕಿಟಕಿಗಳನ್ನು ಮುಚ್ಚಿ ಮುಂದಿನ 2 ಗಂಟೆಗಳ ಕಾಲ ಹೊರಗೆ ಹೋಗುವುದನ್ನು ತಪ್ಪಿಸಿ.",
-                "ta": "அருகில் கடுமையான நச்சுப் புகை கண்டறியப்பட்டுள்ளது. காற்றின் திசையிலுள்ள பள்ளிகள் மற்றும் முதியவர்கள் ஜன்னல்களை மூடி, அடுத்த 2 மணிநேரத்திற்கு வெளியில் செல்வதைத் தவிர்க்கவும்.",
-                "ml": "സമീപത്ത് കനത്ത വിഷപ്പുക കണ്ടെത്തി. കാറ്റിന്റെ ദിശയിലുള്ള സ്കൂളുകളും മുതിർന്നവരും ജനലുകൾ അടയ്ക്കുകയും അടുത്ത 2 മണിക്കൂർ പുറത്തിറങ്ങുന്നത് ഒഴിവാക്കുകയും വേണം.",
+                "en": (
+                    "Dense toxic smoke detected nearby. Vulnerable groups, elderly, and schools "
+                    "downwind should close windows and avoid outdoor exposure for the next 2 hours."
+                ),
+                "hi": (
+                    "आस-पास घना जहरीला धुआं देखा गया है। हवा के बहाव वाले क्षेत्र के स्कूलों और "
+                    "बुजुर्गों से अनुरोध है कि वे खिड़कियां बंद रखें और अगले 2 घंटे बाहर न निकलें।"
+                ),
+                "te": (
+                    "సమీపంలో దట్టమైన విషపూరిత పొగ కనిపించింది. గాలి ప్రవాహ దిశలోని పాఠశాలలు మరియు "
+                    "వృద్ధులు కిటికీలు మూసివేసి, వచ్చే 2 గంటల పాటు బయటకు రాకుండా ఉండాలి."
+                ),
+                "kn": (
+                    "ಹತ್ತಿರದಲ್ಲಿ ದಟ್ಟವಾದ ವಿಷಕಾರಿ ಹೊಗೆ ಪತ್ತೆಯಾಗಿದೆ. ಗಾಳಿಯ ದಿಕ್ಕಿನಲ್ಲಿರುವ ಶಾಲೆಗಳು ಮತ್ತು "
+                    "ಹಿರಿಯ ನಾಗರಿಕರು ಕಿಟಕಿಗಳನ್ನು ಮುಚ್ಚಿ ಮುಂದಿನ 2 ಗಂಟೆಗಳ ಕಾಲ ಹೊರಗೆ ಹೋಗುವುದನ್ನು ತಪ್ಪಿಸಿ."
+                ),
+                "ta": (
+                    "அருகில் கடுமையான நச்சுப் புகை கண்டறியப்பட்டுள்ளது. காற்றின் திசையிலுள்ள பள்ளிகள் மற்றும் "
+                    "முதியவர்கள் ஜன்னல்களை மூடி, அடுத்த 2 மணிநேரத்திற்கு வெளியில் செல்வதைத் தவிர்க்கவும்."
+                ),
+                "ml": (
+                    "സമീപത്ത് കനത്ത വിഷപ്പുക കണ്ടെത്തി. കാറ്റിന്റെ ദിശയിലുള്ള സ്കൂളുകളും "
+                    "മുതിർന്നവരും ജനലുകൾ അടയ്ക്കുകയും അടുത്ത 2 മണിക്കൂർ പുറത്തിറങ്ങുന്നത് ഒഴിവാക്കുകയും വേണം."
+                ),
             },
         }
 

@@ -62,7 +62,6 @@ SENSITIVE_RECEPTORS: List[Dict[str, Any]] = [
         "vulnerable_population_estimate": 1100,
         "description": "Special education and composite senior secondary school",
     },
-
     # =========================================================================
     # 2. BENGALURU (BBMP / Whitefield / Bellandur / Peenya)
     # =========================================================================
@@ -106,7 +105,6 @@ SENSITIVE_RECEPTORS: List[Dict[str, Any]] = [
         "vulnerable_population_estimate": 1900,
         "description": "Migrant construction worker settlement with tin roof dwellings",
     },
-
     # =========================================================================
     # 3. KANPUR (KMC / Jajmau / Panki Industrial Cluster)
     # =========================================================================
@@ -140,7 +138,6 @@ SENSITIVE_RECEPTORS: List[Dict[str, Any]] = [
         "vulnerable_population_estimate": 6200,
         "description": "Dense residential quarters directly adjacent to leather processing units",
     },
-
     # =========================================================================
     # 4. MUMBAI (BMC / Govandi / Chembur / Deonar Landfill)
     # =========================================================================
@@ -174,7 +171,6 @@ SENSITIVE_RECEPTORS: List[Dict[str, Any]] = [
         "vulnerable_population_estimate": 8500,
         "description": "One of Asia's densest informal habitats directly bordering open dump fires",
     },
-
     # =========================================================================
     # 5. PUNJAB AGRARIAN BELT (Ludhiana / Sangrur Stubble Zone)
     # =========================================================================
@@ -218,7 +214,10 @@ def haversine_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) ->
     dphi = math.radians(lat2 - lat1)
     dlambda = math.radians(lon2 - lon1)
 
-    a = math.sin(dphi / 2.0) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2.0) ** 2
+    a = (
+        math.sin(dphi / 2.0) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2.0) ** 2
+    )
     c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
     return r * c
 
@@ -246,20 +245,43 @@ def get_candidate_receptors(
     # If no receptors found in catalog near remote coordinates, generate synthetic local ward receptors
     if not candidates:
         synthetic_offsets = [
-            ("INFRA-LOCAL-01", "Municipal Government School", "EDUCATION_FACILITY", 0.012, 0.010, 450),
-            ("INFRA-LOCAL-02", "Primary Health Dispensary", "HEALTHCARE_FACILITY", -0.008, 0.015, 220),
-            ("INFRA-LOCAL-03", "Community Residential Ward", "RESIDENTIAL_WARD", 0.015, -0.007, 1800),
+            (
+                "INFRA-LOCAL-01",
+                "Municipal Government School",
+                "EDUCATION_FACILITY",
+                0.012,
+                0.010,
+                450,
+            ),
+            (
+                "INFRA-LOCAL-02",
+                "Primary Health Dispensary",
+                "HEALTHCARE_FACILITY",
+                -0.008,
+                0.015,
+                220,
+            ),
+            (
+                "INFRA-LOCAL-03",
+                "Community Residential Ward",
+                "RESIDENTIAL_WARD",
+                0.015,
+                -0.007,
+                1800,
+            ),
         ]
         for s_id, s_name, s_cat, d_lat, d_lon, pop in synthetic_offsets:
-            candidates.append({
-                "id": s_id,
-                "name": s_name,
-                "category": s_cat,
-                "city_id": "auto_generated",
-                "lat": round(origin_lat + d_lat, 6),
-                "lon": round(origin_lon + d_lon, 6),
-                "vulnerable_population_estimate": pop,
-                "description": f"Geo-indexed local receptor near ({origin_lat:.4f}, {origin_lon:.4f})",
-            })
+            candidates.append(
+                {
+                    "id": s_id,
+                    "name": s_name,
+                    "category": s_cat,
+                    "city_id": "auto_generated",
+                    "lat": round(origin_lat + d_lat, 6),
+                    "lon": round(origin_lon + d_lon, 6),
+                    "vulnerable_population_estimate": pop,
+                    "description": f"Geo-indexed local receptor near ({origin_lat:.4f}, {origin_lon:.4f})",
+                }
+            )
 
     return candidates

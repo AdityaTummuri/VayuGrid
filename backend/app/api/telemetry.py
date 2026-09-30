@@ -13,11 +13,21 @@ router = APIRouter(prefix="/telemetry", tags=["Telemetry & Micrometeorology"])
 weather_service = WeatherService()
 
 
-@router.get("/weather", response_model=WeatherTelemetry, summary="Fetch live micrometeorological vectors")
+@router.get(
+    "/weather",
+    response_model=WeatherTelemetry,
+    summary="Fetch live micrometeorological vectors",
+)
 async def get_weather_telemetry(
-    latitude: float = Query(..., ge=-90.0, le=90.0, description="Latitude in decimal degrees"),
-    longitude: float = Query(..., ge=-180.0, le=180.0, description="Longitude in decimal degrees"),
-    city_id: Optional[str] = Query(None, description="Optional city archetype slug (e.g., 'delhi_ncr')"),
+    latitude: float = Query(
+        ..., ge=-90.0, le=90.0, description="Latitude in decimal degrees"
+    ),
+    longitude: float = Query(
+        ..., ge=-180.0, le=180.0, description="Longitude in decimal degrees"
+    ),
+    city_id: Optional[str] = Query(
+        None, description="Optional city archetype slug (e.g., 'delhi_ncr')"
+    ),
 ):
     """
     Retrieves live boundary layer height, wind speed, wind direction, downwind advection bearing,
@@ -33,12 +43,15 @@ async def get_weather_telemetry(
         return telemetry
     except Exception as exc:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to retrieve weather telemetry: {str(exc)}"
+            status_code=500, detail=f"Failed to retrieve weather telemetry: {str(exc)}"
         )
 
 
-@router.get("/cities", response_model=List[CityMetadata], summary="Get pre-configured flagship cities")
+@router.get(
+    "/cities",
+    response_model=List[CityMetadata],
+    summary="Get pre-configured flagship cities",
+)
 async def get_supported_cities():
     """
     Returns pre-configured Indian regional archetypes with coordinate centers,

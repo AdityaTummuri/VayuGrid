@@ -7,7 +7,7 @@ and friction velocity estimation.
 
 import math
 import logging
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, List
 import httpx
 
 from app.models.weather import (
@@ -105,7 +105,7 @@ class WeatherService:
         self,
         wind_speed_ms: float,
         is_day: bool,
-        solar_radiation_w_m2: Optional[float] = None
+        solar_radiation_w_m2: Optional[float] = None,
     ) -> StabilityClass:
         """
         Determines Pasquill-Gifford atmospheric stability class (A-F) based on
@@ -155,7 +155,7 @@ class WeatherService:
     def estimate_friction_velocity(
         self,
         wind_speed_ms: float,
-        terrain: TerrainCategory
+        terrain: TerrainCategory,
     ) -> float:
         """
         Estimates surface friction velocity u* (m/s) using the logarithmic wind profile:
@@ -182,7 +182,7 @@ class WeatherService:
         self,
         lat: float,
         lon: float,
-        city_id: Optional[str] = None
+        city_id: Optional[str] = None,
     ) -> WeatherTelemetry:
         """
         Synthesizes physically coherent microclimate parameters when external APIs
@@ -201,7 +201,7 @@ class WeatherService:
                 "wind_dir": 285.0,  # North-westerly winter advection
                 "temp_c": 29.5,
                 "rh": 56.0,
-                "pbl_m": 480.0,     # Strong capping inversion
+                "pbl_m": 480.0,  # Strong capping inversion
                 "terrain": TerrainCategory.URBAN,
             },
             "bengaluru": {
@@ -268,7 +268,7 @@ class WeatherService:
         self,
         lat: float,
         lon: float,
-        city_id: Optional[str] = None
+        city_id: Optional[str] = None,
     ) -> WeatherTelemetry:
         """
         Fetches live boundary layer and vector wind telemetry from Open-Meteo.
@@ -297,9 +297,7 @@ class WeatherService:
                 resp = await client.get(self.open_meteo_url, params=params)
 
             if resp.status_code != 200:
-                logger.warning(
-                    f"Open-Meteo API returned status {resp.status_code}. Using regional fallback."
-                )
+                logger.warning(f"Open-Meteo API returned status {resp.status_code}. Using regional fallback.")
                 return self.generate_regional_fallback(lat, lon, city_id)
 
             data = resp.json()
@@ -366,9 +364,7 @@ class WeatherService:
             )
 
         except Exception as exc:
-            logger.warning(
-                f"Exception during Open-Meteo telemetry fetch ({exc}). Using regional fallback."
-            )
+            logger.warning(f"Exception during Open-Meteo telemetry fetch ({exc}). Using regional fallback.")
             return self.generate_regional_fallback(lat, lon, city_id)
 
     @staticmethod
