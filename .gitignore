@@ -61,3 +61,7 @@ Thumbs.db
 *.ogg
 backend/uploads/
 backend/cache/
+*.db
+*.sqlite
+*.sqlite3
+
