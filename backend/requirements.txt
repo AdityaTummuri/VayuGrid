@@ -1,0 +1,34 @@
+# Core FastAPI Web Framework & Server
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.28.0,<1.0.0
+pydantic>=2.6.0,<3.0.0
+pydantic-settings>=2.2.0,<3.0.0
+python-multipart>=0.0.9
+
+# Google Generative AI & Cloud SDKs
+google-generativeai>=0.5.0
+google-cloud-aiplatform>=1.44.0
+google-cloud-translate>=3.15.0
+google-cloud-texttospeech>=2.16.0
+
+# HTTP & Asynchronous Networking
+httpx>=0.27.0
+aiofiles>=23.2.1
+
+# Scientific, Physics & Geospatial Computing
+numpy>=1.26.4
+scipy>=1.12.0
+shapely>=2.0.3
+pyproj>=3.6.1
+
+# Utilities, Image Processing & Telemetry
+Pillow>=10.2.0
+python-dotenv>=1.0.1
+rich>=13.7.1
+
+# Testing & Quality Assurance
+pytest>=8.1.0
+pytest-asyncio>=0.23.5
+httpx-ws>=0.5.0
+flake8>=7.0.0
+black>=24.2.0
