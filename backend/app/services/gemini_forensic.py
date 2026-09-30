@@ -44,7 +44,7 @@ class GeminiForensicService:
         self.model_name = model_name or settings.GEMINI_MODEL
         self._is_initialized = False
 
-        if HAS_GENAI and self.api_key and self.api_key != "your_gemini_api_key_here":
+        if HAS_GENAI and self.api_key and self.api_key not in ("your_gemini_api_key_here", "mock_key"):
             try:
                 genai.configure(api_key=self.api_key)
                 self._model = genai.GenerativeModel(

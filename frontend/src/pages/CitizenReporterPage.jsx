@@ -58,23 +58,30 @@ export function CitizenReporterPage() {
     setAuditResult(null);
 
     try {
+      const lat = coords?.lat ?? 28.6139;
+      const lng = coords?.lng ?? 77.2090;
+
       const formData = new FormData();
       formData.append('image', file);
-      if (coords) {
-        formData.append('latitude', coords.lat);
-        formData.append('longitude', coords.lng);
-      }
+      formData.append('latitude', lat);
+      formData.append('longitude', lng);
+      formData.append('reported_by', 'CITIZEN_PWA');
       if (notes) {
         formData.append('notes', notes);
       }
 
       const result = await submitIncidentAudit(formData);
+      const isValid = result.verification?.is_valid_environmental_hazard ?? (result.status !== 'REJECTED_SPOOF');
+
       setAuditResult({
         ticket_id: result.ticket_id,
+        status: result.status,
+        is_valid: isValid,
+        rejection_reason: result.verification?.rejection_reason,
         timestamp: result.created_at || new Date().toISOString(),
         classification: result.verification?.source_classification || 'OPEN_MUNICIPAL_WASTE_BURNING',
-        severity_score: result.verification?.severity_score || 0.88,
-        confidence: result.verification?.confidence_score || 0.94,
+        severity_score: result.verification?.severity_score ?? 0.88,
+        confidence: result.verification?.confidence_score ?? 0.94,
         visual_markers: result.verification?.detected_visual_markers || [
           'Dense toxic particulate plume (>85% Opacity)',
           'Chlorinated polymer pyrolysis indicators detected',
@@ -82,16 +89,25 @@ export function CitizenReporterPage() {
         ],
         location: {
           address_hint: coords ? `Co-ordinates (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})` : 'Sector 16 Peripheral Corridor',
-          lat: coords?.lat || 28.6289,
-          lng: coords?.lng || 77.2065,
+          lat,
+          lng,
         },
+        vernacular_advisories: result.vernacular_advisories,
       });
 
-      addToast({
-        type: 'SUCCESS',
-        title: 'Forensic Audit Verified',
-        message: `Generated statutory ticket ${result.ticket_id}`,
-      });
+      if (isValid) {
+        addToast({
+          type: 'SUCCESS',
+          title: 'Forensic Audit Verified',
+          message: `Generated statutory ticket ${result.ticket_id}`,
+        });
+      } else {
+        addToast({
+          type: 'WARNING',
+          title: 'Submission Rejected',
+          message: result.verification?.rejection_reason || 'Image failed anti-spoofing verification.',
+        });
+      }
     } catch (err) {
       addToast({
         type: 'ERROR',

@@ -8,6 +8,36 @@ import { CLASSIFICATION_META } from '../../constants/classifications';
 export function AuditResultCard({ result }) {
   if (!result) return null;
 
+  if (result.is_valid === false || result.status === 'REJECTED_SPOOF') {
+    return (
+      <div className="bg-rose-50 border border-rose-300 rounded-xl p-6 space-y-4 shadow-sm animate-fade-in text-slate-800">
+        <div className="flex items-center justify-between gap-3 border-b border-rose-200 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="h-6 px-2.5 rounded bg-rose-100 text-rose-700 border border-rose-300 font-mono text-2xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 text-rose-600" />
+              <span>SUBMISSION REJECTED (ANTI-SPOOFING)</span>
+            </span>
+            <span className="font-mono text-xs font-bold text-slate-700 font-tabular">
+              {result.ticket_id}
+            </span>
+          </div>
+          <span className="text-3xs font-mono text-rose-600 bg-rose-100/80 px-2 py-0.5 rounded border border-rose-200 font-medium">
+            AI AUDIT REJECTED
+          </span>
+        </div>
+        <div className="p-4 rounded-lg bg-white border border-rose-200 shadow-2xs">
+          <p className="text-xs font-bold text-rose-800 mb-1">Reason for Rejection:</p>
+          <p className="text-xs text-slate-700 leading-relaxed font-mono">
+            {result.rejection_reason || 'Image failed anti-spoofing verification or depicts non-environmental scene.'}
+          </p>
+        </div>
+        <p className="text-2xs text-slate-500">
+          VayuGrid's Gemini AI filter ensures only genuine outdoor pollution photographs trigger municipal emergency work orders.
+        </p>
+      </div>
+    );
+  }
+
   const meta = CLASSIFICATION_META[result.classification] || {};
 
   return (
