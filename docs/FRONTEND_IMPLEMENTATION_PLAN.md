@@ -93,62 +93,140 @@ frontend/src/
 
 ---
 
-## 3. Design System Tokens
+## 3. Professional Design System & Theme Architecture (Anti-AI Cliché / Enterprise Grade)
 
-### Colors (CSS Custom Properties in `src/styles/index.css`)
+### 3.1 Design Philosophy: Mission-Critical Civic & Geospatial Infrastructure
+To reflect the scale and seriousness of a Pan-India planetary-to-pavement air quality platform, VayuGrid rejects the "generic AI hackathon dashboard" tropes:
+- ❌ **No neon purple/cyan glowing borders** (`box-shadow: 0 0 20px ...` / cyber-glows).
+- ❌ **No blurry novelty gradient cards** or floating glass spheres that scream "AI-generated template".
+- ❌ **No childish emoji badge clutter** where technical municipal precision is expected.
+- ❌ **No generic SaaS pastel palettes** that disregard official environmental standards.
+
+Instead, the UI adopts an **Authoritative Command & Control / GovTech Standard** inspired by **Palantir Foundry / Gotham, Copernicus Sentinel Browser, Datadog Enterprise, and India's Central Pollution Control Board (CPCB) Digital Public Infrastructure**:
+- ✔️ **High Data Density & Spatial Rigor:** Clean 1px hairline dividers (`border-slate-800`), crisp panel docks, collapsible telemetry sidebars, tabular data alignments.
+- ✔️ **Official CPCB Color Harmonies:** Strict adherence to India's National Air Quality Index (NAQI) statutory color tiers for environmental categories.
+- ✔️ **Technical Typography:** Sans-serif UI (`Inter`) paired with monospaced tabular numerals (`JetBrains Mono` / `IBM Plex Mono`) for GPS coordinates, timestamps (IST/UTC), dispersion velocities, and ticket hashes.
+- ✔️ **Scientific Cartography:** Vector map styling with minimal commercial POI clutter; Gaussian dispersion cones rendered as crisp GIS polygon geometries with technical opacity and boundary isopleths.
+- ✔️ **Civic Public Good Header:** Official institutional cues (CPCB Ingestion Sync status, live telemetry heartbeat, sub-50ms latency badge, IST live clock, bilingual English/Hindi portal seal).
+
+---
+
+### 3.2 Color Palette Tokens (Enterprise Command Palette)
 
 ```css
 :root {
-  --bg-base:        #0A0E1A;   /* Deep navy — main background */
-  --bg-surface:     #111827;   /* Card surfaces */
-  --bg-elevated:    #1C2333;   /* Modals, hover panels */
-  --brand-primary:  #00C2FF;   /* Electric teal — VayuGrid brand */
-  --brand-secondary:#7C3AED;   /* Purple — AI/Gemini accent */
-  --severity-critical: #FF3B30;
-  --severity-severe:   #FF9500;
-  --severity-moderate: #FFD60A;
-  --severity-low:      #34C759;
-  --text-primary:   #F9FAFB;
-  --text-secondary: #9CA3AF;
-  --border-subtle:  rgba(255,255,255,0.06);
-  --border-active:  rgba(0,194,255,0.3);
+  /* Slate / Obsidian Neutral Hierarchy */
+  --bg-app:             #090D16;   /* Deep mission-control slate */
+  --bg-panel:           #0F172A;   /* Structured panel background */
+  --bg-surface:         #151F32;   /* Elevated cards, table rows */
+  --bg-hover:           #1E293B;   /* Interactive hover fill */
+  
+  /* Borders & Hairlines */
+  --border-subtle:      #1E293B;   /* Hairline container borders */
+  --border-strong:      #334155;   /* Active boundaries & input outlines */
+  --border-focus:       #38BDF8;   /* High-visibility active focus ring */
+
+  /* Text & Contrast (WCAG AAA/AA Compliant) */
+  --text-primary:       #F8FAFC;   /* Crisp white for headlines & values */
+  --text-secondary:     #94A3B8;   /* Muted gray for labels & metadata */
+  --text-tertiary:      #64748B;   /* De-emphasized timestamps & unit labels */
+  --text-mono:          #E2E8F0;   /* High-legibility monospaced values */
+
+  /* Institutional Accent (Federal / Municipal Slate Blue - Not Neon) */
+  --civic-blue:         #2563EB;   /* Primary Gov action / telemetry link */
+  --civic-blue-hover:   #1D4ED8;
+  --civic-blue-subtle:  rgba(37, 99, 235, 0.12);
+
+  /* Statutory CPCB National Air Quality Index (NAQI) Severity Tokens */
+  --aqi-good:           #16A34A;   /* 0 - 50: Clean / Good */
+  --aqi-satisfactory:   #65A30D;   /* 51 - 100: Satisfactory */
+  --aqi-moderate:       #D97706;   /* 101 - 200: Moderate */
+  --aqi-poor:           #EA580C;   /* 201 - 300: Poor */
+  --aqi-very-poor:      #DC2626;   /* 301 - 400: Very Poor */
+  --aqi-severe:         #7F1D1D;   /* 401 - 500: Severe / Emergency */
+
+  /* Operational Status Indicators */
+  --status-active:      #10B981;   /* Live stream operational */
+  --status-pending:     #F59E0B;   /* Ingest buffer / awaiting dispatch */
+  --status-alert:       #EF4444;   /* Breach threshold exceeded */
 }
 ```
 
-### Typography
-- **Headings:** `Space Grotesk` (700) — from Google Fonts
-- **UI / Body:** `Inter` (400, 500, 600) — from Google Fonts
-- **Data / Coords:** `font-mono` (Tailwind)
+### 3.3 Typography & Font Setup
+- **Headings & Primary Interface:** `Inter` (Weights: 400, 500, 600, 700)
+- **Data, Coordinates, Timestamps, Hashes:** `JetBrains Mono` (Weights: 400, 500) with `tabular-nums font-mono`
 
-Add to `index.html`:
+In `index.html`:
 ```html
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 ```
 
-### Severity Helper (use everywhere severity is displayed)
-```js
-// src/constants/classifications.js
-export function getSeverityLevel(score) {
-  if (score >= 0.8) return 'CRITICAL';
-  if (score >= 0.5) return 'SEVERE';
-  if (score >= 0.3) return 'MODERATE';
-  return 'LOW';
-}
+### 3.4 Statutory Classifications & Metadata
 
-export const SEVERITY_COLORS = {
-  CRITICAL:  { bg: '#FF3B30', text: '#fff' },
-  SEVERE:    { bg: '#FF9500', text: '#fff' },
-  MODERATE:  { bg: '#FFD60A', text: '#000' },
-  LOW:       { bg: '#34C759', text: '#fff' },
+```javascript
+// src/constants/classifications.js
+
+export const CPCB_AQI_TIERS = {
+  GOOD:         { label: 'Good',          range: '0-50',    color: '#16A34A', bg: 'rgba(22, 163, 74, 0.15)', text: '#4ADE80' },
+  SATISFACTORY: { label: 'Satisfactory',  range: '51-100',  color: '#65A30D', bg: 'rgba(101, 163, 13, 0.15)', text: '#A3E635' },
+  MODERATE:     { label: 'Moderate',      range: '101-200', color: '#D97706', bg: 'rgba(217, 119, 6, 0.15)', text: '#FBBF24' },
+  POOR:         { label: 'Poor',          range: '201-300', color: '#EA580C', bg: 'rgba(234, 88, 12, 0.15)', text: '#FB923C' },
+  VERY_POOR:    { label: 'Very Poor',     range: '301-400', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.15)', text: '#F87171' },
+  SEVERE:       { label: 'Severe',        range: '401-500', color: '#7F1D1D', bg: 'rgba(127, 29, 29, 0.25)', text: '#FCA5A5' },
+};
+
+export const SEVERITY_CONFIG = {
+  CRITICAL:  { label: 'CRITICAL',  scoreThreshold: 0.8, color: '#DC2626', bg: 'rgba(220, 38, 38, 0.12)', border: '#EF4444' },
+  SEVERE:    { label: 'SEVERE',    scoreThreshold: 0.5, color: '#EA580C', bg: 'rgba(234, 88, 12, 0.12)', border: '#F97316' },
+  MODERATE:  { label: 'MODERATE',  scoreThreshold: 0.3, color: '#D97706', bg: 'rgba(217, 119, 6, 0.12)', border: '#F59E0B' },
+  LOW:       { label: 'ADVISORY',  scoreThreshold: 0.0, color: '#16A34A', bg: 'rgba(22, 163, 74, 0.12)', border: '#22C55E' },
 };
 
 export const CLASSIFICATION_META = {
-  OPEN_MUNICIPAL_WASTE_BURNING:  { label: 'Municipal Waste Fire', color: '#FF6B35', icon: '🔥' },
-  CONSTRUCTION_DEMOLITION_DUST:  { label: 'Construction Dust',    color: '#C4A35A', icon: '🏗️' },
-  INDUSTRIAL_STACK_EMISSION:     { label: 'Industrial Stack',     color: '#FF3B30', icon: '🏭' },
-  BIOMASS_STUBBLE_BURNING:       { label: 'Stubble Burning',      color: '#7ED321', icon: '🌾' },
-  HIGH_DENSITY_VEHICULAR_IDLING: { label: 'Vehicle Idling',       color: '#4A9EFF', icon: '🚗' },
-  UNPAVED_ROAD_SUSPENSION:       { label: 'Road Dust',            color: '#9B8EA0', icon: '🛣️' },
+  OPEN_MUNICIPAL_WASTE_BURNING: {
+    code: 'SRC-01',
+    label: 'Open Municipal Waste Fire',
+    category: 'Civic Solid Waste',
+    color: '#EA580C',
+    actionRequired: 'Rapid Smog Gun & Municipal Squad Intercept',
+  },
+  CONSTRUCTION_DEMOLITION_DUST: {
+    code: 'SRC-02',
+    label: 'C&D Fugitive Dust Plume',
+    category: 'Urban Infrastructure',
+    color: '#CA8A04',
+    actionRequired: 'Automated Dust-Suppressant Mist Cannon',
+  },
+  INDUSTRIAL_STACK_EMISSION: {
+    code: 'SRC-03',
+    label: 'Point-Source Industrial Flare',
+    category: 'Industrial Point',
+    color: '#DC2626',
+    actionRequired: 'Statutory Section 31A Show-Cause Order',
+  },
+  BIOMASS_STUBBLE_BURNING: {
+    code: 'SRC-04',
+    label: 'Agricultural Biomass Pyrolysis',
+    category: 'Regional Biomass',
+    color: '#B45309',
+    actionRequired: 'Sub-divisional Flying Squad Deployment',
+  },
+  HIGH_DENSITY_VEHICULAR_IDLING: {
+    code: 'SRC-05',
+    label: 'Heavy Transit Corridor Idling',
+    category: 'Mobile Vehicular',
+    color: '#2563EB',
+    actionRequired: 'Traffic Police ITS Route Divergence Advisory',
+  },
+  UNPAVED_ROAD_SUSPENSION: {
+    code: 'SRC-06',
+    label: 'Unpaved Arterial Road Resuspension',
+    category: 'Roadways Infrastructure',
+    color: '#64748B',
+    actionRequired: 'Mechanical Road Sweeper Dispatch',
+  },
 };
 
 export const LANGUAGE_META = [
@@ -173,28 +251,49 @@ cd frontend && npm install react-router-dom@6
 ### Step 1.2 — Configure Tailwind CSS
 **`frontend/tailwind.config.js`:**
 ```js
+/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        bg: { base: '#0A0E1A', surface: '#111827', elevated: '#1C2333' },
-        brand: { primary: '#00C2FF', secondary: '#7C3AED' },
-        severity: { critical: '#FF3B30', severe: '#FF9500', moderate: '#FFD60A', low: '#34C759' },
+        app: {
+          bg: '#090D16',       // Deep mission slate base
+          panel: '#0F172A',    // Structured container/sidebar
+          surface: '#151F32',  // Table row / card surface
+          elevated: '#1E293B', // High-contrast popovers / headers
+          hover: '#1E2A3E',    // Interactive state
+        },
+        border: {
+          subtle: '#1E293B',
+          strong: '#334155',
+          active: '#38BDF8',
+        },
+        civic: {
+          DEFAULT: '#2563EB',
+          hover: '#1D4ED8',
+          subtle: 'rgba(37, 99, 235, 0.12)',
+        },
+        cpcb: {
+          good: '#16A34A',
+          satisfactory: '#65A30D',
+          moderate: '#D97706',
+          poor: '#EA580C',
+          veryPoor: '#DC2626',
+          severe: '#7F1D1D',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        heading: ['Space Grotesk', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite',
-        'fade-in':    'fadeIn 0.3s ease-out',
-        'slide-up':   'slideUp 0.3s ease-out',
+      fontSize: {
+        '2xs': ['0.6875rem', { lineHeight: '0.875rem' }],
       },
-      keyframes: {
-        fadeIn:  { from: { opacity: 0 }, to: { opacity: 1 } },
-        slideUp: { from: { opacity: 0, transform: 'translateY(12px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+      boxShadow: {
+        'panel': '0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4)',
+        'subtle': '0 2px 8px -2px rgba(0, 0, 0, 0.5)',
       },
     },
   },
