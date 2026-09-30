@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌬️ VAYU-SUTRA (वायु-सूत्र)
+# 🌬️ VayuGrid (वायुग्रिड)
 ### Verifiable Air-Quality Yield & Unified Spatio-Temporal Resilience Architecture
 
 **A Federated, Multi-Tier Planetary-to-Pavement Digital Public Good for Pan-India Air Pollution Governance**
@@ -23,7 +23,7 @@ India's National Clean Air Programme (NCAP) monitors ambient air through Continu
 2. **Elevation vs. Breathing Zone Mismatch:** CAAQMS units are installed 10–15m atop government rooftops, measuring regional averages while missing acute toxic plumes at the 0–2m human breathing zone.
 3. **Passive Metric Display vs. Proactive Enforcement:** Current platforms report numbers (*"AQI is 342 - Very Poor"*) without identifying the emission source, predicting the downwind exposure corridor, or dispatching municipal assets.
 
-**VAYU-SUTRA** breaks this paradigm by fusing **macro satellite feeds (Sentinel-5P via Google Earth Engine)**, **meso ground sensors (CPCB/OpenAQ)**, and **micro crowdsourced citizen telemetry** through **Google Gemini Flash Multimodal Forensics** and a **Physics-Constrained Gaussian Plume Dispersion Model**.
+**VayuGrid** breaks this paradigm by fusing **macro satellite feeds (Sentinel-5P via Google Earth Engine)**, **meso ground sensors (CPCB/OpenAQ)**, and **micro crowdsourced citizen telemetry** through **Google Gemini Flash Multimodal Forensics** and a **Physics-Constrained Gaussian Plume Dispersion Model**.
 
 ---
 
@@ -86,7 +86,7 @@ To ensure rapid, modular, and balanced execution during the hackathon, the syste
 
 ## 🌆 Multi-City Demonstration Regional Archetypes
 
-VAYU-SUTRA comes pre-configured with 5 distinct regional archetypes across India:
+VayuGrid comes pre-configured with 5 distinct regional archetypes across India:
 
 1. **Delhi-NCR:** Municipal solid waste burning & seasonal inversion smog (MCD).
 2. **Bengaluru (BBMP):** High-density tech corridor construction dust & transit resuspension.

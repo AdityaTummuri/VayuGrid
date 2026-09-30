@@ -1,4 +1,4 @@
-# VAYU-SUTRA (वायु-सूत्र): 4-Minute Demonstration Video Script
+# VayuGrid (वायुग्रिड): 4-Minute Demonstration Video Script
 
 **Target Duration:** 3:45 to 4:15 minutes  
 **Format:** Screen Recording + Webcam Inset + Live System Interaction
@@ -25,15 +25,15 @@
   * Screen opens on an official air dashboard showing a static number: *"AQI: 365 - Severe"*.
   * Mouse cursor highlights the problem: No indication of who caused the spike or where the plume is traveling.
 * **Speaker:**
-  > *"Every winter across India, millions of citizens breathe toxic air. But today's monitoring system suffers from a critical blind spot. A standard CPCB monitoring station costs over ₹1.5 Crore to build, meaning 90% of Indian towns have no real-time ground sensors. Even where they exist, they are installed 15 meters high on government rooftops — completely missing the toxic garbage fires, road dust, and vehicle idling plumes where citizens actually walk and breathe. Today, we introduce **VAYU-SUTRA**."*
+  > *"Every winter across India, millions of citizens breathe toxic air. But today's monitoring system suffers from a critical blind spot. A standard CPCB monitoring station costs over ₹1.5 Crore to build, meaning 90% of Indian towns have no real-time ground sensors. Even where they exist, they are installed 15 meters high on government rooftops — completely missing the toxic garbage fires, road dust, and vehicle idling plumes where citizens actually walk and breathe. Today, we introduce **VayuGrid**."*
 
 ---
 
 ### [0:35 - 1:15] Scene 2: The Planetary-to-Pavement Digital Public Good
 * **Visual:**
-  * Transition to the VAYU-SUTRA landing view with the clean dual-persona toggle (**ULB Administrative Command** vs. **Citizen Resilience Node**).
+  * Transition to the VayuGrid landing view with the clean dual-persona toggle (**ULB Administrative Command** vs. **Citizen Resilience Node**).
 * **Speaker:**
-  > *"VAYU-SUTRA is a federated, multi-tier Digital Public Good. It fuses macro satellite feeds from Sentinel-5P on Google Earth Engine, official ground station feeds from CPCB and OpenAQ, and hyper-local geotagged photos from citizens and municipal field wardens. At the center is Google Gemini Flash, acting as an autonomous Chief Environmental Forensic Inspector."*
+  > *"VayuGrid is a federated, multi-tier Digital Public Good. It fuses macro satellite feeds from Sentinel-5P on Google Earth Engine, official ground station feeds from CPCB and OpenAQ, and hyper-local geotagged photos from citizens and municipal field wardens. At the center is Google Gemini Flash, acting as an autonomous Chief Environmental Forensic Inspector."*
 
 ---
 
@@ -63,7 +63,7 @@
     * `Government Senior Secondary School Ward 12 (Arrival: 11 mins)`
     * `Sanjay Community Healthcare Center (Arrival: 15 mins)`.
 * **Speaker:**
-  > *"Now comes the physics. VAYU-SUTRA immediately fetches live meteorological vectors from Open-Meteo. Our Gaussian dispersion engine calculates the plume's advection trajectory and projects a dynamic exposure cone downwind. Through automated spatial intersection, the system flags that a government school is 1.6 kilometers downwind, with toxic particulate matter scheduled to arrive in just 11 minutes. What used to take hours of manual inspection now happens in milliseconds."*
+  > *"Now comes the physics. VayuGrid immediately fetches live meteorological vectors from Open-Meteo. Our Gaussian dispersion engine calculates the plume's advection trajectory and projects a dynamic exposure cone downwind. Through automated spatial intersection, the system flags that a government school is 1.6 kilometers downwind, with toxic particulate matter scheduled to arrive in just 11 minutes. What used to take hours of manual inspection now happens in milliseconds."*
 
 ---
 
@@ -77,7 +77,7 @@
   * Click the Play Audio button on **Kannada**:
     * Audio speaks clearly: *"ಹತ್ತಿರದಲ್ಲಿ ದಟ್ಟವಾದ ವಿಷಕಾರಿ ಹೊಗೆ ಪತ್ತೆಯಾಗಿದೆ..."*
 * **Speaker:**
-  > *"VAYU-SUTRA delivers a dual dispatch. On the municipal side, the officer dispatches a mist cannon truck with pre-routed GPS coordinates with one click. On the citizen side, we break the literacy barrier. Our Google translation and speech pipeline synthesizes localized voice alerts across six Indian languages — English, Hindi, Telugu, Kannada, Tamil, and Malayalam — ensuring street vendors and school staff get life-saving advisories in their mother tongue."*
+  > *"VayuGrid delivers a dual dispatch. On the municipal side, the officer dispatches a mist cannon truck with pre-routed GPS coordinates with one click. On the citizen side, we break the literacy barrier. Our Google translation and speech pipeline synthesizes localized voice alerts across six Indian languages — English, Hindi, Telugu, Kannada, Tamil, and Malayalam — ensuring street vendors and school staff get life-saving advisories in their mother tongue."*
 
 ---
 
@@ -87,4 +87,4 @@
   * The map smoothly pans, loading regional incidents and localized ambient layers.
   * Final slide showing GitHub repository link, live deployment URL, and team credits.
 * **Speaker:**
-  > *"VAYU-SUTRA is not limited to one city. Whether it is construction dust along Bengaluru's Outer Ring Road, tannery stacks in Kanpur, or seasonal stubble burning in Punjab, the platform scales immediately with zero initial capex for all 700+ Indian districts. This is how we use Google AI to build resilience for communities. Thank you."*
+  > *"VayuGrid is not limited to one city. Whether it is construction dust along Bengaluru's Outer Ring Road, tannery stacks in Kanpur, or seasonal stubble burning in Punjab, the platform scales immediately with zero initial capex for all 700+ Indian districts. This is how we use Google AI to build resilience for communities. Thank you."*

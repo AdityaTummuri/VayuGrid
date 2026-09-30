@@ -1,4 +1,4 @@
-# VAYU-SUTRA (वायु-सूत्र) Pitch Deck Structure
+# VayuGrid (वायुग्रिड) Pitch Deck Structure
 
 **Track:** Track 2 — Clean Air & Climate Resilience  
 **Competition:** Build with AI: Code for Communities (Second Edition)  
@@ -7,10 +7,10 @@
 ---
 
 ## Slide 1: Title & Executive Summary
-* **Header:** VAYU-SUTRA (वायु-सूत्र)
+* **Header:** VayuGrid (वायुग्रिड)
 * **Subtitle:** Verifiable Air-Quality Yield & Unified Spatio-Temporal Resilience Architecture
 * **Tagline:** Transforming Passive Air-Quality Numbers into Autonomous Municipal Dispatch & Hyper-Local Vernacular Protection.
-* **Presented By:** Team VAYU-SUTRA
+* **Presented By:** Team VayuGrid
 * **Key Badges:** Powered by Google Gemini 1.5 Flash • Google Maps Platform • Open-Meteo • Digital Public Good (DPG)
 
 ---
@@ -86,7 +86,7 @@
   3. **Kanpur (KMC):** Industrial stack emissions & tannery cluster pollutants.
   4. **Mumbai (BMC):** Coastal inversion & high-density transit corridors.
   5. **Punjab Agrarian Belt:** Post-harvest biomass & crop residue burning plumes.
-* **Zero-Capex Day-1 Viability:** Any district administration can adopt VAYU-SUTRA immediately with zero hardware procurement.
+* **Zero-Capex Day-1 Viability:** Any district administration can adopt VayuGrid immediately with zero hardware procurement.
 
 ---
 
@@ -105,7 +105,7 @@
 ---
 
 ## Slide 12: Team & Conclusion
-* **Team VAYU-SUTRA:** Dedicated engineering across Frontend/UX, Distributed Backend, Multimodal AI, and Geospatial Physics.
+* **Team VayuGrid:** Dedicated engineering across Frontend/UX, Distributed Backend, Multimodal AI, and Geospatial Physics.
 * **Vision Statement:**
   > *"Democratizing actionable air intelligence from planetary satellites to pavement level — protecting every breathing citizen across India."*
 * **Links:** GitHub Repository • Live Prototype URL • Video Demonstration

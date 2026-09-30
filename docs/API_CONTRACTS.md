@@ -1,4 +1,4 @@
-# VAYU-SUTRA API & Data Contracts Specification
+# VayuGrid API & Data Contracts Specification
 
 **Version:** 2.0.0  
 **Base URL:** `http://localhost:8000/api/v1` (Local) / `https://<cloud-run-domain>/api/v1` (Production)

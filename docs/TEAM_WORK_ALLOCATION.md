@@ -1,4 +1,4 @@
-# VAYU-SUTRA (वायु-सूत्र): 4-Member Professional Work Allocation
+# VayuGrid (वायुग्रिड): 4-Member Professional Work Allocation
 
 **Project Track:** Track 2 — Clean Air & Climate Resilience (Build with AI: Code for Communities)  
 **Team Structure:** 4 Dedicated Engineers with Equal Ownership & Clear Cross-System Interfaces

@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: vayu-sutra-backend
+    container_name: vayugrid-backend
     ports:
       - "8000:8000"
     env_file:
@@ -20,7 +20,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: vayu-sutra-frontend
+    container_name: vayugrid-frontend
     ports:
       - "5173:5173"
     env_file:

@@ -1,4 +1,4 @@
-# VAYU-SUTRA System Architecture & Mathematical Foundations
+# VayuGrid System Architecture & Mathematical Foundations
 
 **Verifiable Air-Quality Yield & Unified Spatio-Temporal Resilience Architecture**  
 *A Federated, Multi-Tier Planetary-to-Pavement Digital Public Good for Pan-India Air Pollution Governance*
@@ -53,13 +53,13 @@
 
 ## 2. Mathematical Foundation: Gaussian Plume Dispersion Model
 
-To avoid computationally prohibitive CFD (Computational Fluid Dynamics) simulations in real-time operational environments, VAYU-SUTRA employs an adapted **Gaussian Steady-State Plume Dispersion Formula**:
+To avoid computationally prohibitive CFD (Computational Fluid Dynamics) simulations in real-time operational environments, VayuGrid employs an adapted **Gaussian Steady-State Plume Dispersion Formula**:
 
 $$C(x, y, z) = \frac{Q}{2 \pi u \sigma_y \sigma_z} \exp\left( -\frac{y^2}{2 \sigma_y^2} \right) \left[ \exp\left( -\frac{(z - H)^2}{2 \sigma_z^2} \right) + \exp\left( -\frac{(z + H)^2}{2 \sigma_z^2} \right) \right]$$
 
 ### Parameter Definitions:
 * $C(x, y, z)$: Downwind pollutant concentration at spatial coordinates $(x, y, z)$ ($mg/m^3$).
-* $Q$: Effective source emission rate ($g/s$). In VAYU-SUTRA, this is derived empirically from the Gemini Forensic Model:
+* $Q$: Effective source emission rate ($g/s$). In VayuGrid, this is derived empirically from the Gemini Forensic Model:
   $$Q = k_{source} \times \text{SeverityScore} \times \pi R_{origin}^2$$
   where $k_{source}$ is a class-specific emission density factor (e.g., Waste Burning $= 4.2$, Industrial Stack $= 8.5$).
 * $u$: Wind speed at effective release height ($m/s$), ingested in real time from meteorological telemetry.
@@ -103,7 +103,7 @@ $$C(x, y, z) = \frac{Q}{2 \pi u \sigma_y \sigma_z} \exp\left( -\frac{y^2}{2 \sig
 
 ## 4. Google Technologies Integration Matrix
 
-| Google Technology | Role in VAYU-SUTRA | Implementation Specifics |
+| Google Technology | Role in VayuGrid | Implementation Specifics |
 | :--- | :--- | :--- |
 | **Gemini 1.5/2.5 Flash** | Multimodal forensic image inspection & structuring | Uses `response_mime_type: "application/json"` with schema constraints to extract opacity, source classification, and ULB action orders. |
 | **Google Maps JavaScript API** | Dynamic command center vector rendering | Custom vector overlays displaying real-time downwind polygons, hotspot circles, and receptor markers. |

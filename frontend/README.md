@@ -1,16 +1,39 @@
-# React + Vite
+# VayuGrid Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This directory contains the user interface for **VayuGrid**, comprising the **Urban Local Body (ULB) Executive Command Desk** and the **Citizen Hyper-Local Resilience Node**.
 
-Currently, two official plugins are available:
+## Tech Stack
+* **Framework:** React 18 + Vite
+* **Styling:** Vanilla CSS & Tailwind CSS tokens
+* **Icons:** `lucide-react`
+* **Maps:** Google Maps JavaScript API (`@vis.gl/react-google-maps`) / Vector Polygon Overlays
+* **Audio:** HTML5 Audio API & Web Speech API
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Getting Started
 
-## React Compiler
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+2. **Configure Environment:**
+   Ensure `../.env` has:
+   ```env
+   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+   VITE_BACKEND_URL=http://localhost:8000
+   ```
 
-## Expanding the Oxlint configuration
+3. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+   The application will be live at `http://localhost:5173`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+4. **Build for Production:**
+   ```bash
+   npm run build
+   ```
+
+## Development Guidelines
+* Refer to [`../docs/TEAM_WORK_ALLOCATION.md`](../docs/TEAM_WORK_ALLOCATION.md) for Member 1 responsibilities.
+* Refer to [`../docs/API_CONTRACTS.md`](../docs/API_CONTRACTS.md) for backend endpoints and JSON response schemas.
