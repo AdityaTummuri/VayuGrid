@@ -32,6 +32,12 @@ app.include_router(dispersion_router, prefix="/api/v1")
 app.include_router(incidents_router, prefix="/api/v1")
 
 
+# Register Subsystem Routers
+from app.api.endpoints.vernacular import router as vernacular_router
+
+app.include_router(vernacular_router, prefix="/api/v1")
+
+
 @app.get("/")
 async def root():
     return {
